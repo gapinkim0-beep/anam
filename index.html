@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>anam real estate agency — 라이프스타일을 중개합니다</title>
+<meta name="description" content="안암·고려대 일대 원룸, 주택, 상가 임대차 중개. 라이프스타일을 중개합니다." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">anam <strong>real estate agency</strong></a>
+    <nav class="main-nav">
+      <div class="nav-links">
+        <a href="index.html#listings" data-i18n="nav.listings">매물</a>
+        <a href="index.html#about" data-i18n="nav.about">소개</a>
+        <a href="index.html#contact" data-i18n="nav.contact">문의</a>
+      </div>
+      <button class="lang-toggle" type="button" aria-label="Toggle language">
+        <span class="lang-current">KR</span>
+        <span class="lang-caret">▾</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="hero-eyebrow" data-i18n="hero.eyebrow">ANAM REAL ESTATE AGENCY</p>
+        <h1 class="hero-title" data-i18n="hero.title">라이프스타일을 중개합니다.</h1>
+        <p class="hero-sub" data-i18n="hero.sub">고려대·안암 일대, 당신의 라이프스타일에 꼭 맞는 집을 찾아드립니다.</p>
+      </div>
+      <div class="hero-images">
+        <img class="hero-img-a" src="https://picsum.photos/seed/anam-hero-a/900/1200" alt="anam listing photo 1" />
+        <img class="hero-img-b" src="https://picsum.photos/seed/anam-hero-b/900/700" alt="anam listing photo 2" />
+        <img class="hero-img-c" src="https://picsum.photos/seed/anam-hero-c/900/700" alt="anam listing photo 3" />
+      </div>
+    </div>
+  </section>
+
+  <section id="listings" class="listings">
+    <div class="wrap">
+      <form id="filterForm" class="filter-bar">
+        <div class="filter-group">
+          <label class="filter-label" for="filterType" data-i18n="filter.type.label">매물 종류</label>
+          <select id="filterType" class="filter-select">
+            <option value="all" data-i18n="filter.type.all">전체</option>
+            <option value="오피스텔">오피스텔</option>
+            <option value="주택">주택</option>
+            <option value="상가">상가</option>
+          </select>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-group grow">
+          <label class="filter-label" data-i18n="filter.feature.label">매물 특징</label>
+          <div id="filterFeatures" class="chip-group">
+            <button type="button" class="chip" data-feature="채광">채광</button>
+            <button type="button" class="chip" data-feature="위치">위치</button>
+            <button type="button" class="chip" data-feature="평수">평수</button>
+            <button type="button" class="chip" data-feature="풀옵션">풀옵션</button>
+            <button type="button" class="chip" data-feature="리모델링">리모델링</button>
+            <button type="button" class="chip" data-feature="인테리어">인테리어</button>
+          </div>
+        </div>
+
+        <button type="submit" class="filter-submit" data-i18n="filter.submit">검색</button>
+      </form>
+
+      <div class="section-heading">
+        <h2 data-i18n="list.heading">최신 매물</h2>
+        <span id="listingCount" class="count">10건</span>
+      </div>
+
+      <div id="listingList" class="listing-list"></div>
+      <p id="emptyState" class="empty-state" data-i18n="list.empty" style="display:none;">조건에 맞는 매물이 없습니다. 필터를 조정해 보세요.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="contact">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">anam</a>
+        <p data-i18n="footer.tagline">라이프스타일을 중개합니다. 안암·고려대 일대 원룸·주택·상가 전문 중개.</p>
+      </div>
+      <div class="footer-col">
+        <h3 data-i18n="footer.col1">메뉴</h3>
+        <ul>
+          <li><a href="index.html#listings" data-i18n="nav.listings">매물</a></li>
+          <li><a href="index.html#about" data-i18n="nav.about">소개</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3 data-i18n="footer.col2">고객지원</h3>
+        <ul>
+          <li><a href="#" data-i18n="footer.support1">이용안내</a></li>
+          <li><a href="#" data-i18n="footer.support2">자주 묻는 질문</a></li>
+          <li><a href="#" data-i18n="footer.support3">관리자 문의</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom" data-i18n="footer.rights">© 2026 anam real estate agency. All rights reserved.</div>
+  </div>
+</footer>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

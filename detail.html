@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>매물 상세 — anam real estate agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">anam <strong>real estate agency</strong></a>
+    <nav class="main-nav">
+      <div class="nav-links">
+        <a href="index.html#listings" data-i18n="nav.listings">매물</a>
+        <a href="index.html#about" data-i18n="nav.about">소개</a>
+        <a href="index.html#contact" data-i18n="nav.contact">문의</a>
+      </div>
+      <button class="lang-toggle" type="button" aria-label="Toggle language">
+        <span class="lang-current">KR</span>
+        <span class="lang-caret">▾</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap detail-header">
+  <a href="index.html" class="back-link" data-i18n="detail.back">← 목록으로</a>
+</div>
+
+<main class="detail-main">
+  <div class="wrap detail-grid">
+    <div class="gallery">
+      <div class="gallery-main">
+        <img id="mainImage" src="" alt="" />
+      </div>
+      <div id="galleryThumbs" class="gallery-thumbs"></div>
+
+      <section class="detail-desc-section" style="margin-top: var(--space-48);">
+        <p class="admin-note" data-i18n="detail.admin_note">관리자 입력 영역 — 매물 소개글은 관리자가 언제든 동적으로 수정할 수 있습니다.</p>
+        <p id="listingDesc" class="detail-desc"></p>
+      </section>
+    </div>
+
+    <div class="detail-side">
+      <span id="listingType" class="detail-eyebrow"></span>
+      <h1 id="listingTitle" class="detail-title"></h1>
+      <p id="listingLocation" class="hero-sub"></p>
+      <p id="listingPrice" class="detail-price"></p>
+      <button id="contactBtn" class="cta-button" data-i18n="detail.contact">문의하기</button>
+    </div>
+  </div>
+
+  <div class="wrap spec-section">
+    <div class="spec-table-wrap">
+    <table class="spec-table">
+      <tbody>
+        <tr>
+          <th data-i18n="spec.address">주소</th>
+          <td id="specAddress"></td>
+          <th data-i18n="spec.leaseType">임대방식</th>
+          <td id="specLeaseType"></td>
+        </tr>
+        <tr>
+          <th data-i18n="spec.moveIn">입주일</th>
+          <td id="specMoveIn"></td>
+          <th data-i18n="spec.price">가격</th>
+          <td id="specPrice"></td>
+        </tr>
+        <tr>
+          <th data-i18n="spec.structure">구조</th>
+          <td id="specStructure"></td>
+          <th data-i18n="spec.maintenance">관리비</th>
+          <td id="specMaintenance"></td>
+        </tr>
+        <tr>
+          <th data-i18n="spec.options">옵션</th>
+          <td id="specOptions"></td>
+          <th data-i18n="spec.etc">기타</th>
+          <td id="specEtc"></td>
+        </tr>
+        <tr class="keyword-row">
+          <th data-i18n="spec.keywords">키워드</th>
+          <td id="specKeywords" class="wide" colspan="3"></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer" id="contact">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">anam</a>
+        <p data-i18n="footer.tagline">라이프스타일을 중개합니다. 안암·고려대 일대 원룸·주택·상가 전문 중개.</p>
+      </div>
+      <div class="footer-col">
+        <h3 data-i18n="footer.col1">메뉴</h3>
+        <ul>
+          <li><a href="index.html#listings" data-i18n="nav.listings">매물</a></li>
+          <li><a href="index.html#about" data-i18n="nav.about">소개</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3 data-i18n="footer.col2">고객지원</h3>
+        <ul>
+          <li><a href="#" data-i18n="footer.support1">이용안내</a></li>
+          <li><a href="#" data-i18n="footer.support2">자주 묻는 질문</a></li>
+          <li><a href="#" data-i18n="footer.support3">관리자 문의</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom" data-i18n="footer.rights">© 2026 anam real estate agency. All rights reserved.</div>
+  </div>
+</footer>
+
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <h3 id="modalTitle" data-i18n="modal.title">문의하기</h3>
+      <button id="modalClose" class="modal-close" type="button" aria-label="Close">×</button>
+    </div>
+    <form id="inquiryForm">
+      <div class="form-field">
+        <label for="moveDate" data-i18n="modal.moveDate">이사 일자</label>
+        <input type="date" id="moveDate" name="moveDate" required />
+      </div>
+      <div class="form-field">
+        <label for="visitTime" data-i18n="modal.visitTime">방문 원하는 시간</label>
+        <input type="time" id="visitTime" name="visitTime" required />
+      </div>
+      <div class="form-field">
+        <label for="otherListing" data-i18n="modal.otherListing">다른 찾는 매물</label>
+        <input type="text" id="otherListing" name="otherListing" data-i18n-placeholder="modal.otherListingPh" placeholder="예) 안암동 위주로 오피스텔 추가로 보고 싶어요" />
+      </div>
+      <div class="form-field">
+        <label for="note" data-i18n="modal.note">기타 사항</label>
+        <textarea id="note" name="note" rows="3" data-i18n-placeholder="modal.notePh" placeholder="궁금하신 점을 자유롭게 남겨주세요"></textarea>
+      </div>
+      <div class="form-field">
+        <label for="contact" data-i18n="modal.contact">연락처</label>
+        <input type="tel" id="contact" name="contact" data-i18n-placeholder="modal.contactPh" placeholder="010-0000-0000" required />
+      </div>
+      <button type="submit" class="modal-submit" data-i18n="modal.submit">문의 남기기</button>
+      <p id="formSuccess" class="form-success" data-i18n="modal.success">문의가 접수되었습니다. 빠르게 연락드릴게요!</p>
+    </form>
+  </div>
+</div>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/detail.js"></script>
+</body>
+</html>
