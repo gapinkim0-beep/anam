@@ -13,12 +13,14 @@
 
 <header class="site-header">
   <div class="wrap">
-    <a href="index.html" class="logo">anam <strong>real estate agency</strong></a>
+    <a href="index.html" class="logo">
+      <img src="assets/images/logo.jpg" alt="anam real estate agency" />
+    </a>
     <nav class="main-nav">
       <div class="nav-links">
-        <a href="index.html#listings" data-i18n="nav.listings">매물</a>
-        <a href="index.html#about" data-i18n="nav.about">소개</a>
-        <a href="index.html#contact" data-i18n="nav.contact">문의</a>
+        <a href="about.html" data-i18n="nav.about">소개글</a>
+        <a href="info.html" data-i18n="nav.info">부동산정보</a>
+        <a href="#" id="navContactLink" data-i18n="nav.contact">문의</a>
       </div>
       <button class="lang-toggle" type="button" aria-label="Toggle language">
         <span class="lang-current">KR</span>
@@ -93,30 +95,16 @@
   </div>
 </main>
 
-<footer class="site-footer" id="contact">
-  <div class="wrap">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="index.html" class="logo">anam</a>
-        <p data-i18n="footer.tagline">라이프스타일을 중개합니다. 안암·고려대 일대 원룸·주택·상가 전문 중개.</p>
-      </div>
-      <div class="footer-col">
-        <h3 data-i18n="footer.col1">메뉴</h3>
-        <ul>
-          <li><a href="index.html#listings" data-i18n="nav.listings">매물</a></li>
-          <li><a href="index.html#about" data-i18n="nav.about">소개</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h3 data-i18n="footer.col2">고객지원</h3>
-        <ul>
-          <li><a href="#" data-i18n="footer.support1">이용안내</a></li>
-          <li><a href="#" data-i18n="footer.support2">자주 묻는 질문</a></li>
-          <li><a href="#" data-i18n="footer.support3">관리자 문의</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom" data-i18n="footer.rights">© 2026 anam real estate agency. All rights reserved.</div>
+<footer class="site-footer">
+  <div class="wrap footer-info">
+    <p class="footer-info-line footer-info-name">아남 공인중개사무소</p>
+    <p class="footer-info-line"><strong>운영시간</strong> 평일 10:00 – 19:00, 토요일 10:00 ~ 15:00 (일요일, 공휴일 휴무 / <strong>100% 예약제 시범운행</strong>)</p>
+    <p class="footer-info-line"><strong>대표</strong> 김가빈 ｜ <strong>주소</strong> 서울특별시 서대문구 신촌로 121 아남오피스텔 B08호</p>
+    <p class="footer-info-line"><strong>중개업등록번호</strong> 11410-2025-00025 ｜ <strong>사업자등록번호</strong> 689-13-02572</p>
+    <p class="footer-info-bottom">
+      <span data-i18n="footer.rights">© 2026 anam real estate agency. All rights reserved.</span>
+      <a href="admin.html" class="footer-admin-link" aria-label="Admin">·</a>
+    </p>
   </div>
 </footer>
 
@@ -154,7 +142,10 @@
 </div>
 
 <script src="assets/js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/data.js"></script>
+<script src="assets/js/inquiry-modal.js"></script>
 <script src="assets/js/detail.js"></script>
 </body>
 </html>

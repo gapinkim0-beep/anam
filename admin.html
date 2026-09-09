@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>관리자 — anam real estate agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body class="admin-body">
+
+<!-- ============================================================
+     로그인 폼 — admin.html 접속 시 가장 먼저 노출됩니다.
+     ============================================================ -->
+<div id="adminLogin" class="admin-login-wrap">
+  <div class="admin-login-box">
+    <h1>관리자 로그인</h1>
+    <p>비밀번호를 입력하면 매물/키워드/문의/부동산정보 관리 화면으로 이동합니다.</p>
+    <form id="loginForm">
+      <div class="form-field">
+        <label for="adminPassword">비밀번호</label>
+        <input type="password" id="adminPassword" name="adminPassword" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="modal-submit">로그인</button>
+      <p id="loginError" class="admin-login-error">비밀번호가 올바르지 않습니다. 다시 시도해 주세요.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     대시보드 — 로그인 성공 시에만 노출됩니다.
+     ============================================================ -->
+<div id="adminDashboard" class="admin-shell admin-hidden">
+  <div class="wrap">
+    <div class="admin-topbar">
+      <h1>anam 관리자</h1>
+      <button id="logoutBtn" type="button" class="admin-logout">로그아웃</button>
+    </div>
+
+    <!-- 상단 탭 메뉴 — 클릭 시 아래 4개 대시보드 화면이 부드럽게 전환됩니다 -->
+    <nav class="admin-tabs" role="tablist">
+      <button type="button" class="admin-tab is-active" data-tab="listings" role="tab" aria-selected="true">매물수정</button>
+      <button type="button" class="admin-tab" data-tab="keywords" role="tab" aria-selected="false">키워드</button>
+      <button type="button" class="admin-tab" data-tab="inquiries" role="tab" aria-selected="false">문의고객</button>
+      <button type="button" class="admin-tab" data-tab="magazine" role="tab" aria-selected="false">부동산정보</button>
+    </nav>
+
+    <!-- ================= [매물수정] 탭 ================= -->
+    <div class="admin-tab-panel" data-tab-panel="listings">
+      <section class="admin-panel">
+        <h2 id="listingFormTitle">매물 등록</h2>
+        <form id="listingForm">
+          <input type="hidden" id="listingId" value="" />
+
+          <div class="admin-form-grid">
+            <div class="form-field full">
+              <label for="fTitle">매물명</label>
+              <input type="text" id="fTitle" required placeholder="예) 안암역 5분, 채광 좋은 신축 원룸" />
+            </div>
+
+            <div class="form-field">
+              <label for="fType">매물 종류</label>
+              <select id="fType" required>
+                <option value="오피스텔">오피스텔</option>
+                <option value="주택">주택</option>
+                <option value="상가">상가</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="fLeaseType">임대방식</label>
+              <select id="fLeaseType" required>
+                <option value="월세">월세</option>
+                <option value="전세">전세</option>
+              </select>
+            </div>
+
+            <div class="form-field full">
+              <label for="fAddress">주소</label>
+              <input type="text" id="fAddress" required placeholder="예) 서울 성북구 안암동" />
+            </div>
+
+            <div class="form-field">
+              <label for="fDeposit">보증금(만원)</label>
+              <input type="number" id="fDeposit" min="0" required />
+            </div>
+
+            <div class="form-field">
+              <label for="fMonthlyRent">월세(만원, 전세는 0)</label>
+              <input type="number" id="fMonthlyRent" min="0" value="0" />
+            </div>
+
+            <div class="form-field">
+              <label for="fMaintenanceFee">관리비</label>
+              <input type="text" id="fMaintenanceFee" placeholder="예) 6만원 (수도 포함)" />
+            </div>
+
+            <div class="form-field">
+              <label for="fMoveInDate">입주일</label>
+              <input type="date" id="fMoveInDate" />
+            </div>
+
+            <div class="form-field">
+              <label for="fStructure">구조</label>
+              <input type="text" id="fStructure" placeholder="예) 원룸 (방1, 욕실1)" />
+            </div>
+
+            <div class="form-field">
+              <label for="fOptions">옵션</label>
+              <input type="text" id="fOptions" placeholder="예) 냉장고, 세탁기, 에어컨" />
+            </div>
+
+            <div class="form-field full">
+              <label for="fEtc">기타 사항</label>
+              <input type="text" id="fEtc" placeholder="예) 반려동물 협의 가능" />
+            </div>
+
+            <div class="form-field full">
+              <label for="fDescription">소개글</label>
+              <textarea id="fDescription" rows="3" placeholder="상세페이지에 노출될 매물 소개 문구"></textarea>
+            </div>
+
+            <div class="form-field full">
+              <label for="fKeywords">라이프스타일 키워드 (쉼표로 구분)</label>
+              <input type="text" id="fKeywords" placeholder="예) #고려대인근, #신축, #채광좋음, #풀옵션" />
+            </div>
+
+            <div class="form-field full">
+              <label>매물 특징 ([키워드] 탭에서 등록한 목록이 표시됩니다)</label>
+              <div id="fFeatures" class="chip-group"></div>
+            </div>
+
+            <div class="form-field full">
+              <label for="fMainImage">대표 이미지 (메인 화면 및 상세페이지 첫 사진)</label>
+              <input type="file" id="fMainImage" accept="image/*" />
+            </div>
+
+            <div class="form-field full">
+              <label for="fSubImages">상세페이지 서브 이미지 (여러 장 선택 가능)</label>
+              <input type="file" id="fSubImages" accept="image/*" multiple />
+            </div>
+          </div>
+
+          <div class="admin-form-actions">
+            <button type="submit" class="admin-submit" id="listingSubmitBtn">등록하기</button>
+            <button type="button" class="admin-cancel-edit admin-hidden" id="cancelEditBtn">수정 취소</button>
+            <span id="listingFormStatus" class="admin-form-status"></span>
+          </div>
+          <p class="admin-guide">
+            등록하기를 누르면 매물 데이터가 저장되고, index.html 메인 화면과 detail.html 상세페이지에 실시간 반영됩니다.
+            Supabase가 연동된 경우 <code>listings</code> 테이블과 <code>listing-images</code> Storage 버킷에 저장되며,
+            미연동 상태에서는 이 브라우저의 localStorage에 저장되는 데모 모드로 동작합니다. (assets/js/supabase-client.js 상단 가이드 참고)
+          </p>
+        </form>
+      </section>
+
+      <section class="admin-panel">
+        <h2>등록된 매물</h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>매물명</th>
+                <th>종류</th>
+                <th>주소</th>
+                <th>임대방식/가격</th>
+                <th>업데이트</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="listingTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= [키워드] 탭 ================= -->
+    <div class="admin-tab-panel admin-hidden" data-tab-panel="keywords">
+      <section class="admin-panel">
+        <h2>라이프스타일 키워드 관리</h2>
+        <form id="keywordForm" class="admin-keyword-form">
+          <div class="form-field">
+            <label for="fKeywordNew">새 키워드 추가</label>
+            <input type="text" id="fKeywordNew" placeholder="예) 반려동물동반" />
+          </div>
+          <button type="submit" class="admin-submit">추가하기</button>
+        </form>
+        <div id="keywordChipList" class="chip-group admin-keyword-list"></div>
+        <p class="admin-guide">
+          여기서 추가·삭제한 키워드는 메인 화면(index.html) 필터바와 [매물수정] 탭의 '매물 특징' 선택지에 즉시 반영됩니다.
+        </p>
+      </section>
+    </div>
+
+    <!-- ================= [문의고객] 탭 ================= -->
+    <div class="admin-tab-panel admin-hidden" data-tab-panel="inquiries">
+      <section class="admin-panel">
+        <h2>고객 문의 내역</h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>접수일시</th>
+                <th>매물</th>
+                <th>이사일자</th>
+                <th>방문 희망시간</th>
+                <th>다른 찾는 매물</th>
+                <th>기타사항</th>
+                <th>연락처</th>
+                <th>처리상태</th>
+              </tr>
+            </thead>
+            <tbody id="inquiryTableBody"></tbody>
+          </table>
+        </div>
+        <p class="admin-guide">
+          상세페이지 '문의하기' 팝업으로 접수된 내용이 최신순으로 표시됩니다. 처리상태의 단계를 클릭하면
+          확인 → 상담중 → 완료 순으로 상태가 즉시 업데이트되어 DB(또는 데모 모드에서는 localStorage)에 반영됩니다.
+          연락처 등 개인정보가 포함되므로, Supabase 연동 시 반드시 관리자만 조회 가능하도록 RLS 정책을 설정하세요.
+        </p>
+      </section>
+    </div>
+
+    <!-- ================= [부동산정보] 탭 ================= -->
+    <div class="admin-tab-panel admin-hidden" data-tab-panel="magazine">
+      <section class="admin-panel">
+        <h2 id="magazineFormTitle">부동산정보 글 작성</h2>
+        <form id="magazineForm">
+          <input type="hidden" id="magazineId" value="" />
+          <div class="admin-form-grid">
+            <div class="form-field full">
+              <label for="mTitle">제목</label>
+              <input type="text" id="mTitle" required placeholder="예) 2026년 하반기, 안암·고려대 원룸 시세는 어떻게 움직일까요?" />
+            </div>
+            <div class="form-field full">
+              <label for="mThumbnail">썸네일 이미지 (info.html 목록 카드에 노출)</label>
+              <input type="file" id="mThumbnail" accept="image/*" />
+            </div>
+            <div class="form-field full">
+              <label for="mContent">본문 내용 (줄바꿈으로 문단을 구분해 입력해 주세요)</label>
+              <textarea id="mContent" rows="8" class="admin-magazine-textarea" required placeholder="이번 주 부동산 이슈를 자유롭게 작성해 주세요."></textarea>
+            </div>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="admin-submit" id="magazineSubmitBtn">등록하기</button>
+            <button type="button" class="admin-cancel-edit admin-hidden" id="magazineCancelBtn">수정 취소</button>
+            <span id="magazineFormStatus" class="admin-form-status"></span>
+          </div>
+          <p class="admin-guide">
+            등록일은 저장 시각으로 자동 기록되며, info.html 목록과 info-detail.html 상세페이지에 즉시 반영됩니다.
+          </p>
+        </form>
+      </section>
+
+      <section class="admin-panel">
+        <h2>등록된 글</h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>제목</th>
+                <th>등록일</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="magazineTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

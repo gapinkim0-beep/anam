@@ -14,17 +14,36 @@
 
 ```
 anam/
-├── index.html            # 메인 랜딩 페이지
-├── detail.html           # 매물 상세 페이지
+├── index.html                  # 메인 랜딩 페이지
+├── detail.html                 # 매물 상세 페이지
+├── about.html                  # 소개글 페이지 (브랜드 철학, 에디토리얼 톤)
+├── info.html                   # 부동산정보 매거진 목록 (2-Column 카드)
+├── info-detail.html            # 부동산정보 매거진 상세
+├── admin.html                  # 관리자 대시보드 — 상단 탭(매물수정/키워드/문의고객/부동산정보)
+│                                  (홈 화면에 노출되지 않음, 직접 접속 또는 푸터 미세 링크로만 진입)
 ├── assets/
-│   ├── css/style.css     # 디자인 토큰 + 전체 스타일 (DESIGN.md 팔레트/간격 준수)
+│   ├── css/style.css           # 디자인 토큰 + 전체 스타일 (DESIGN.md 팔레트/간격 준수)
+│   ├── images/
+│   │   ├── logo.jpg            # 헤더/푸터 로고 (image/logo 폴더 원본을 웹용으로 리사이즈)
+│   │   └── hero-1/2/3.jpg      # 히어로 메인 배너 (image/네비게이션 바 폴더 1,2,3 순서)
 │   └── js/
-│       ├── data.js       # 목업 매물 데이터 10건 (실서비스에서는 API 응답으로 교체)
-│       ├── i18n.js       # KR/EN 다국어 토글
-│       ├── main.js       # 메인 페이지: 정렬/필터/카드 렌더링
-│       └── detail.js     # 상세 페이지: 갤러리, 스펙 테이블, 문의 모달
+│       ├── data.js             # 목업 매물 10건 + 매거진 2건 + 키워드 목록 + Supabase/로컬 저장 브리지
+│       ├── i18n.js             # KR/EN 다국어 토글
+│       ├── main.js             # 메인 페이지: 정렬/필터/카드 렌더링, 키워드 칩 동적 렌더링
+│       ├── detail.js           # 상세 페이지: 갤러리, 스펙 테이블
+│       ├── info.js             # 부동산정보 목록 렌더링
+│       ├── info-detail.js      # 부동산정보 상세 렌더링
+│       ├── inquiry-modal.js    # index.html·detail.html·about.html·info(-detail).html 공용 '문의하기' 팝업
+│       ├── admin.js            # 관리자 로그인 + 탭 전환 + 매물/키워드/문의상태/매거진 CRUD
+│       └── supabase-client.js  # Supabase 연동 설정 + 테이블/Storage 스키마 가이드(주석)
 └── README.md
 ```
+
+## 네비게이션 / 페이지 구성
+
+- **소개글**(`about.html`): 대표 김가빈의 브랜드 철학을 담은 에디토리얼 페이지.
+- **부동산정보**(`info.html` → `info-detail.html?id=`): 매주 발행하는 부동산 이슈 매거진.
+- **문의**: 모든 페이지 상단 네비의 '문의' 클릭 시 기존 '문의하기' 팝업 모달이 레이어로 열립니다.
 
 ## 디자인 시스템 준수 사항
 
@@ -45,48 +64,46 @@ python -m http.server 5500
 
 브라우저에서 `http://localhost:5500` 접속.
 
-## 데이터 연동 가이드 (Supabase / Firebase)
+## 관리자 페이지 (admin.html)
 
-현재는 `assets/js/data.js`의 `LISTINGS` 배열과 `localStorage`(문의 내역)로 동작하는 프론트엔드 전용 프로토타입입니다.
-실제 서비스로 전환할 때는 아래 순서를 권장합니다.
+- 브랜드 미니멀 톤을 지키기 위해 홈 화면에는 관리자 아이콘/버튼을 노출하지 않습니다.
+  `admin.html`에 직접 접속하거나, 각 페이지 하단 저작권 줄 끝의 아주 옅은 `·` 링크(`.footer-admin-link`)로만 진입합니다.
+- 접속 시 비밀번호 입력 폼이 먼저 뜨고, 로그인에 성공해야 상단 탭 대시보드가 노출됩니다.
+- **Supabase 연동 전(데모 모드)**: 비밀번호는 `assets/js/admin.js`의 `DEMO_ADMIN_PASSWORD`(기본값 `anam1234`) 값이며,
+  데이터는 이 브라우저의 localStorage에 저장되어 각 화면에도 즉시 반영됩니다. 운영 전 반드시 교체하세요.
+- **Supabase 연동 후**: 비밀번호 입력만으로 로그인하되, 내부적으로는 `assets/js/supabase-client.js`에 정의된
+  `ADMIN_EMAIL` 계정으로 Supabase Auth 로그인을 수행합니다. Supabase 대시보드 > Authentication에서 이 이메일로
+  관리자 계정을 하나 만들고, 그 계정의 비밀번호를 관리자에게 안내해 주세요.
 
-### 1) Supabase를 사용하는 경우
+### 상단 탭 대시보드
 
-1. Supabase 프로젝트 생성 후 테이블 2개 구성
-   - `listings` : id, type, title, title_en, location, location_en, lease_type, deposit, monthly_rent, move_in_date, area, structure, structure_en, maintenance_fee, maintenance_fee_en, options, options_en, etc, etc_en, features(text[]), keywords(text[]), keywords_en(text[]), description, description_en, images(text[]), updated_at
-   - `inquiries` : id, listing_id(FK), move_date, visit_time, other_listing, note, contact, created_at
-2. `supabase-js` CDN 스크립트 추가 후 `data.js`의 `LISTINGS` 하드코딩을 아래로 교체
-   ```js
-   const { data: LISTINGS } = await supabase
-     .from('listings')
-     .select('*')
-     .order('updated_at', { ascending: false })
-     .limit(10);
-   ```
-3. `detail.js`의 문의 폼 제출부(`localStorage.setItem` 부분)를 아래로 교체
-   ```js
-   await supabase.from('inquiries').insert(inquiry);
-   ```
-4. 관리자 페이지는 Supabase Studio(테이블 편집 UI)를 그대로 사용하거나, 별도 어드민 화면을 만들어 `listings` 테이블에 CRUD.
-5. 이미지: Supabase Storage 버킷 업로드 후 public URL을 `images` 배열에 저장.
+1. **매물수정**: 기존 매물 등록/수정/삭제(CRUD). 이미지, 주소, 가격, 임대방식 등을 관리합니다.
+2. **키워드**: 필터바(index.html) 및 매물 등록 폼의 '매물 특징' 칩으로 쓰이는 라이프스타일 키워드를
+   추가/삭제합니다. 저장 즉시 메인 화면과 매물 등록 폼에 반영됩니다.
+3. **문의고객**: 고객 문의 내역을 표로 확인하고, 각 행의 **스텝 인디케이터**(확인 → 상담중 → 완료)를
+   클릭해 처리 상태를 갱신합니다.
+4. **부동산정보**: `info.html`에 노출될 매주 이슈 글을 작성/수정/삭제합니다. (본문 15px)
 
-### 2) Firebase를 사용하는 경우
+## 데이터 연동 가이드 (Supabase)
 
-1. Firestore 컬렉션 `listings`, `inquiries` 구성 (필드는 위와 동일한 스키마 사용).
-2. Firebase SDK(compat 또는 modular) 추가 후
-   ```js
-   const snap = await db.collection('listings').orderBy('updatedAt', 'desc').limit(10).get();
-   const LISTINGS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-   ```
-3. 문의 저장
-   ```js
-   await db.collection('inquiries').add(inquiry);
-   ```
-4. 이미지: Firebase Storage 업로드 후 다운로드 URL을 `images` 배열에 저장.
-5. 관리자 화면: Firebase 콘솔에서 직접 문서를 수정하거나, 간단한 관리자 웹앱(Firebase Auth로 로그인 제한)을 별도 구축.
+현재는 `assets/js/data.js`의 `LISTINGS` 배열(및 데모 모드에서는 localStorage)로 동작하는 프론트엔드 전용 프로토타입이며,
+Supabase를 연동하면 아래 순서로 실제 DB에 실시간 반영됩니다.
+
+1. Supabase 프로젝트를 만들고, **테이블 스키마 / RLS 정책 / Storage 버킷 / 관리자 계정 생성 SQL·가이드**는
+   `assets/js/supabase-client.js` 파일 상단 주석에 그대로 정리되어 있습니다. Supabase SQL Editor에 복사해 실행하세요.
+2. `assets/js/supabase-client.js`의 `SUPABASE_URL`, `SUPABASE_ANON_KEY` 두 값을 프로젝트 값으로 채워 넣습니다.
+   (anon public key만 사용하고, service_role 키는 절대 프론트 코드에 넣지 않습니다.)
+3. 값을 채우는 즉시:
+   - `index.html` / `detail.html`은 `listings` 테이블 데이터를 불러와 자동으로 화면을 갱신합니다. (`data.js`의 `anamLoadListingsFromSupabase`)
+   - `info.html` / `info-detail.html`은 `magazine_posts` 테이블 데이터를 불러옵니다. (`data.js`의 `anamLoadMagazineFromSupabase`)
+   - 상세페이지 '문의하기' 팝업은 `inquiries` 테이블에 `status`(확인/상담중/완료) 기본값과 함께 저장됩니다. (`inquiry-modal.js`)
+   - `admin.html`의 등록/수정/삭제와 이미지 업로드는 `listings`/`magazine_posts` 테이블 및 `listing-images`/`magazine-images`
+     Storage 버킷을 사용하고, 문의 상태 변경은 `inquiries.status`를 업데이트합니다. (`admin.js`)
+4. 값을 비워두면(기본 상태) 모든 화면이 자동으로 데모 모드(목업 데이터 + localStorage)로 동작하므로,
+   Supabase 없이도 전체 흐름(등록 → 메인/상세 반영 → 문의 접수 → 관리자 확인/상태 변경 → 매거진 발행)을 바로 확인할 수 있습니다.
 
 ### 공통 권장 사항
 
-- 매물 상세 소개글(`description`)은 관리자가 자유 텍스트로 수정할 수 있어야 하므로, DB 컬럼은 plain text 또는 간단한 마크다운으로 저장하고 프론트에서 렌더링하는 방식을 권장합니다.
-- 문의 데이터는 개인정보(연락처)를 포함하므로, Supabase RLS(행 수준 보안) 또는 Firestore 보안 규칙으로 `inquiries` 테이블은 **쓰기만 공개, 읽기는 관리자만 허용**하도록 설정하세요.
-- 배포 후 관리자 알림(이메일/슬랙)을 원한다면 Supabase Edge Function 또는 Firebase Cloud Function으로 `inquiries` insert 트리거를 연결하는 것을 권장합니다.
+- 매물 상세 소개글(`description`)은 관리자가 자유 텍스트로 수정할 수 있어야 하므로, plain text 컬럼으로 저장하고 프론트에서 그대로 렌더링합니다.
+- 문의 데이터는 개인정보(연락처)를 포함하므로, `inquiries` 테이블은 **쓰기만 공개, 읽기는 로그인한 관리자만 허용**하도록 RLS를 설정합니다(`supabase-client.js` 참고).
+- 배포 후 관리자 알림(이메일/슬랙)을 원한다면 Supabase Edge Function으로 `inquiries` insert 트리거를 연결하는 것을 권장합니다.

@@ -4,7 +4,9 @@
 (function () {
   const params = new URLSearchParams(window.location.search);
   const id = Number(params.get("id"));
-  const item = LISTINGS.find((l) => l.id === id) || LISTINGS[0];
+  // Supabase 데이터가 늦게 도착해 LISTINGS 배열이 교체될 수 있으므로,
+  // item은 상수로 고정하지 않고 렌더링 시점마다 다시 찾습니다.
+  let item = LISTINGS.find((l) => l.id === id) || LISTINGS[0];
 
   function lang() { return LangStore.get(); }
 
@@ -75,61 +77,18 @@
       .join("");
 
     renderGallery();
-  }
 
-  /* 문의하기 모달 */
-  const overlay = document.getElementById("modalOverlay");
-  const openBtn = document.getElementById("contactBtn");
-  const closeBtn = document.getElementById("modalClose");
-  const form = document.getElementById("inquiryForm");
-  const successMsg = document.getElementById("formSuccess");
-
-  function openModal() {
-    overlay.classList.add("is-open");
-    document.body.style.overflow = "hidden";
-  }
-  function closeModal() {
-    overlay.classList.remove("is-open");
-    document.body.style.overflow = "";
-  }
-
-  openBtn.addEventListener("click", openModal);
-  closeBtn.addEventListener("click", closeModal);
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) closeModal();
-  });
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const inquiry = {
-      listingId: item.id,
-      listingTitle: item.title,
-      moveDate: form.moveDate.value,
-      visitTime: form.visitTime.value,
-      otherListing: form.otherListing.value,
-      note: form.note.value,
-      contact: form.contact.value,
-      submittedAt: new Date().toISOString()
-    };
-
-    // NOTE: 데모용 임시 저장소입니다. 실제 서비스에서는 이 지점에서
-    // Supabase/Firebase 등 백엔드로 문의 데이터를 저장합니다. (README.md 참고)
-    try {
-      const existing = JSON.parse(localStorage.getItem("anam-inquiries") || "[]");
-      existing.push(inquiry);
-      localStorage.setItem("anam-inquiries", JSON.stringify(existing));
-    } catch (err) {
-      console.warn("문의 임시 저장 실패:", err);
+    // 문의하기 모달은 assets/js/inquiry-modal.js가 공통으로 제어합니다.
+    // 현재 매물 정보를 넘겨줘서 문의 접수 시 어떤 매물 문의인지 함께 저장되도록 합니다.
+    if (window.AnamInquiryModal) {
+      window.AnamInquiryModal.setContext({ listingId: item.id, listingTitle: item.title });
     }
-
-    successMsg.classList.add("is-visible");
-    form.reset();
-    setTimeout(() => {
-      closeModal();
-      successMsg.classList.remove("is-visible");
-    }, 1600);
-  });
+  }
 
   document.addEventListener("anam:lang-changed", render);
+  document.addEventListener("anam:listings-updated", () => {
+    item = LISTINGS.find((l) => l.id === id) || LISTINGS[0]; // Supabase 실시간 반영
+    render();
+  });
   render();
 })();

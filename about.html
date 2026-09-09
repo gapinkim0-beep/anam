@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>anam real estate agency — 라이프스타일을 중개합니다</title>
-<meta name="description" content="안암·고려대 일대 원룸, 주택, 상가 임대차 중개. 라이프스타일을 중개합니다." />
+<title>소개글 — anam real estate agency</title>
+<meta name="description" content="7년 차 공인중개사 김가빈이 전하는 anam real estate agency의 브랜드 철학." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Pretendard:wght@400;500;700&family=Nanum+Pen+Script&display=swap" rel="stylesheet" />
+<!-- Pretendard 웹폰트 CDN (구글 폰트 미제공 서체) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
@@ -15,12 +17,11 @@
 <header class="site-header">
   <div class="wrap">
     <a href="index.html" class="logo">
-      <!-- 로고 이미지 — image/logo 폴더의 원본 파일 교체 시 자동 반영됩니다 -->
       <img src="assets/images/logo.jpg" alt="anam real estate agency" />
     </a>
     <nav class="main-nav">
       <div class="nav-links">
-        <a href="about.html" data-i18n="nav.about">소개글</a>
+        <a href="about.html" class="is-active" data-i18n="nav.about">소개글</a>
         <a href="info.html" data-i18n="nav.info">부동산정보</a>
         <a href="#" id="navContactLink" data-i18n="nav.contact">문의</a>
       </div>
@@ -32,55 +33,53 @@
   </div>
 </header>
 
-<main>
-  <section class="hero" id="about">
-    <div class="wrap hero-grid">
-      <div class="hero-copy">
-        <h1 class="hero-title" data-i18n="hero.title">변화하는 삶의 방식에 맞춰</h1>
-        <p class="hero-slogan-sub" data-i18n="hero.sub">라이프 스타일에 맞는 집을 하우스 메이트처럼 찾아드릴께요.</p>
-      </div>
-      <!-- 메인 베너 이미지 — image/네비게이션 바 폴더 1,2,3 순서대로 사용 -->
-      <div class="hero-images">
-        <img class="hero-img-a" src="assets/images/hero-1.jpg" alt="anam listing photo 1" />
-        <img class="hero-img-b" src="assets/images/hero-2.jpg" alt="anam listing photo 2" />
-        <img class="hero-img-c" src="assets/images/hero-3.jpg" alt="anam listing photo 3" />
-      </div>
+<main class="about-main">
+  <article class="wrap about-article">
+    <p class="about-lede">여러분은 어떤 라이프스타일로 살아가고 싶으신가요?</p>
+
+    <p>저는 7년 차 공인중개사로 일하고 있으며,<br />러닝과 식물 키우기가 취미입니다.</p>
+
+    <p>퇴근 후 꾸준히 러닝하기 위해 공원 근처에 살고 있고,<br />식물을 키울 수 있는 창가가 있는 집에서 생활하고 있습니다.</p>
+
+    <p>일을 하면서 다양한 매물을 접하기도 했지만,<br />그보다 다채로운 삶을 살아가는 많은 사람들을 만났습니다.</p>
+
+    <p class="about-list">
+      더 나은 삶을 원하는 투자자,<br />
+      새로운 시작을 준비하는 신혼부부,<br />
+      아이들이 안전한 공간에서 생활하기를 바라는 부모님,<br />
+      꿈을 위해 먼 곳에서 공부하러 온 대학생과 유학생들까지.
+    </p>
+
+    <p>모두 다른 이유로 만났지만,<br />결국 우리는 새로운 삶이 시작되는 순간에<br />‘집’이라는 공간을 통해 만났습니다.</p>
+
+    <p>그런 순간마다 저 역시<br />왠지 모를 설렘을 느꼈던 것 같습니다.</p>
+
+    <p class="about-emphasis">집은 단순히 잠을 자고 휴식을 취하는 공간 그 이상이라고 생각합니다.</p>
+
+    <p>현재의 라이프스타일을 고민하기도 하고,<br />때로는 앞으로 어떤 삶을 살아가고 싶은지,<br />미래에는 어떤 사람이 되고 싶은지 생각해보기도 하는 공간.</p>
+
+    <p>수없이 많은 고민과 생각이 쌓이는<br />가장 안전한 나만의 아지트라고 생각합니다.</p>
+
+    <p class="about-emphasis">
+      이러한 경험을 바탕으로<br />
+      저는 부동산 정보는 AI처럼 신속하고 정확하게,<br /><br />
+      중개는 하우스 메이트처럼<br />
+      고객의 이야기를 듣고 함께 고민하는<br />
+      공인중개사가 되고자 합니다.
+    </p>
+
+    <p class="about-question">
+      새로운 시작을 준비하고 계신가요?<br /><br />
+      혹은 지금의 삶에서<br />조금 다른 변화를 고민하고 계신가요?
+    </p>
+
+    <p>각자의 안전하고 특별한 아지트를 찾는 여정에,<br />하우스 메이트처럼 함께하겠습니다.</p>
+
+    <div class="about-signature">
+      <span class="about-signature-date">2026.09.01</span>
+      <span class="about-signature-name">김가빈</span>
     </div>
-  </section>
-
-  <section id="listings" class="listings">
-    <div class="wrap">
-      <form id="filterForm" class="filter-bar">
-        <div class="filter-group">
-          <label class="filter-label" for="filterType" data-i18n="filter.type.label">매물 종류</label>
-          <select id="filterType" class="filter-select">
-            <option value="all" data-i18n="filter.type.all">전체</option>
-            <option value="오피스텔">오피스텔</option>
-            <option value="주택">주택</option>
-            <option value="상가">상가</option>
-          </select>
-        </div>
-
-        <div class="filter-divider"></div>
-
-        <div class="filter-group grow">
-          <label class="filter-label" data-i18n="filter.feature.label">매물 특징</label>
-          <div id="filterFeatures" class="chip-group">
-            <!-- 관리자 [키워드] 탭에서 등록한 키워드가 assets/js/main.js에 의해 여기 동적으로 렌더링됩니다 -->
-          </div>
-        </div>
-
-        <button type="submit" class="filter-submit" data-i18n="filter.submit">검색</button>
-      </form>
-
-      <div class="section-heading">
-        <span id="listingCount" class="count">10건</span>
-      </div>
-
-      <div id="listingList" class="listing-list"></div>
-      <p id="emptyState" class="empty-state" data-i18n="list.empty" style="display:none;">조건에 맞는 매물이 없습니다. 필터를 조정해 보세요.</p>
-    </div>
-  </section>
+  </article>
 </main>
 
 <footer class="site-footer">
@@ -91,7 +90,6 @@
     <p class="footer-info-line"><strong>중개업등록번호</strong> 11410-2025-00025 ｜ <strong>사업자등록번호</strong> 689-13-02572</p>
     <p class="footer-info-bottom">
       <span data-i18n="footer.rights">© 2026 anam real estate agency. All rights reserved.</span>
-      <!-- 관리자 전용 진입 링크 — 홈 화면에는 노출하지 않고 여기 미세하게만 배치 -->
       <a href="admin.html" class="footer-admin-link" aria-label="Admin">·</a>
     </p>
   </div>
@@ -135,6 +133,5 @@
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/inquiry-modal.js"></script>
-<script src="assets/js/main.js"></script>
 </body>
 </html>

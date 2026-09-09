@@ -111,13 +111,34 @@
     render();
   }
 
+  // 라이프스타일 키워드는 관리자 [키워드] 탭에서 등록/수정한 목록(anamGetKeywords)을
+  // 기준으로 매번 새로 그려서, 다른 탭에서 저장한 변경 사항도 즉시 반영합니다.
+  function renderFeatureChips() {
+    const keywords = anamGetKeywords();
+    // 더 이상 존재하지 않는 키워드는 선택 상태에서도 제거합니다.
+    state.features.forEach((f) => { if (!keywords.includes(f)) state.features.delete(f); });
+
+    chipGroup.innerHTML = "";
+    keywords.forEach((feature) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip" + (state.features.has(feature) ? " is-active" : "");
+      chip.setAttribute("data-feature", feature);
+      chip.textContent = feature;
+      chip.addEventListener("click", () => toggleChip(chip));
+      chipGroup.appendChild(chip);
+    });
+  }
+
   typeSelect.addEventListener("change", () => {
     state.type = typeSelect.value;
     render();
   });
 
-  chipGroup.querySelectorAll(".chip").forEach((chip) => {
-    chip.addEventListener("click", () => toggleChip(chip));
+  renderFeatureChips();
+  // 관리자 페이지(admin.html)에서 키워드를 수정하면 다른 탭의 localStorage "storage" 이벤트로 전달됩니다.
+  window.addEventListener("storage", (e) => {
+    if (e.key === KEYWORD_STORAGE_KEY) { renderFeatureChips(); render(); }
   });
 
   filterForm.addEventListener("submit", (e) => {
@@ -137,5 +158,6 @@
   });
 
   document.addEventListener("anam:lang-changed", render);
+  document.addEventListener("anam:listings-updated", render); // Supabase 실시간 반영
   render();
 })();

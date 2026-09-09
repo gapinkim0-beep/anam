@@ -13,6 +13,9 @@
 
   /* Font */
   --font-base: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* DESIGN.md 지정 서체. neue-haas-unica는 상용 서체라 CDN 배포가 불가능하므로,
+     라이선스를 보유한 경우 @font-face로 self-host 후 이 변수만 채우면 전체 화면에 자동 반영됩니다. */
+  --font-neue-haas-unica: 'neue-haas-unica', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Type scale (DESIGN.md 토큰 그대로) */
   --text-caption: 12px;      --leading-caption: 1.18;      --tracking-caption: -0.06px;
@@ -50,7 +53,7 @@
 
 * { box-sizing: border-box; }
 
-html { color-scheme: light; }
+html { color-scheme: light; scroll-behavior: smooth; }
 
 body {
   margin: 0;
@@ -97,9 +100,19 @@ button { font-family: inherit; cursor: pointer; }
   font-size: var(--text-heading);
   line-height: var(--leading-heading);
   letter-spacing: var(--tracking-heading);
+  display: inline-flex;
+  align-items: center;
 }
 
 .logo strong { font-weight: 300; }
+
+/* 로고 이미지 — image/logo 폴더 원본을 그대로 교체하면 자동 반영됩니다
+   (기본 40px에서 2.5배 확대) */
+.logo img {
+  height: 100px;
+  width: auto;
+  display: block;
+}
 
 .main-nav {
   display: flex;
@@ -153,24 +166,33 @@ button { font-family: inherit; cursor: pointer; }
   align-items: center;
 }
 
-.hero-copy { max-width: 480px; }
+.hero-copy { max-width: 480px; text-align: left; }
 
-.hero-eyebrow {
-  font-size: var(--text-caption);
-  letter-spacing: var(--tracking-caption);
-  text-transform: uppercase;
-  font-weight: 400;
+/* 히어로 슬로건 1행 — 40px / neue-haas-unica 300 / 자간 타이트 / 줄바꿈 없음 */
+.hero-title {
+  margin: 0 0 var(--space-12);
+  font-family: var(--font-neue-haas-unica);
+  font-weight: 300;
+  /* 기본 40px 고정, 40px로는 한 줄에 담기 어려운 좁은 화면(~533px 미만)에서만 축소해
+     "줄바꿈 없이 한 줄로 표시" 규칙을 항상 지킵니다 */
+  font-size: clamp(26px, 7.5vw, 40px);
+  line-height: var(--leading-display);
+  letter-spacing: -0.9px;
   color: var(--color-charcoal);
-  margin: 0 0 var(--space-16);
+  white-space: nowrap;
+  text-align: left;
 }
 
-.hero-title {
-  margin: 0 0 var(--space-20);
+/* 히어로 슬로건 2행 — 13px / 줄바꿈 없음 */
+.hero-slogan-sub {
+  margin: 0;
   font-weight: 300;
-  font-size: var(--text-display);
-  line-height: var(--leading-display);
-  letter-spacing: var(--tracking-display);
+  font-size: clamp(11px, 3.4vw, 13px);
+  line-height: 1.4;
+  letter-spacing: var(--tracking-caption);
   color: var(--color-charcoal);
+  white-space: nowrap;
+  text-align: left;
 }
 
 .hero-sub {
@@ -276,16 +298,8 @@ button { font-family: inherit; cursor: pointer; }
 .section-heading {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-bottom: var(--space-24);
-}
-
-.section-heading h2 {
-  font-weight: 300;
-  font-size: var(--text-heading-lg);
-  line-height: var(--leading-heading-lg);
-  letter-spacing: var(--tracking-heading-lg);
-  margin: 0;
 }
 
 .section-heading .count {
@@ -293,28 +307,24 @@ button { font-family: inherit; cursor: pointer; }
   color: var(--color-charcoal);
 }
 
+/* 매물 카드 그리드 — 데스크톱 3열, 태블릿/모바일 2열.
+   등록된 매물 수에 맞춰 행(Row)은 자동으로 늘어납니다(grid-auto-flow 기본값). */
 .listing-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-40);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-40) var(--space-24);
   margin-bottom: var(--space-96);
 }
 
+/* 카드 구조 — [상단: 매물 이미지 20px 라운딩] → [하단: 키워드/안내 문구] 위아래 흐름 */
 .listing-card {
-  display: grid;
-  grid-template-columns: 45% 55%;
-  gap: var(--space-24);
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
 }
-
-.listing-card:nth-child(even) {
-  grid-template-columns: 55% 45%;
-}
-
-.listing-card:nth-child(even) .listing-photo { order: 2; }
-.listing-card:nth-child(even) .listing-info { order: 1; }
 
 .listing-photo {
+  display: block;
   border-radius: var(--radius-card);
   overflow: hidden;
   aspect-ratio: 4 / 3;
@@ -322,7 +332,7 @@ button { font-family: inherit; cursor: pointer; }
 
 .listing-photo img { width: 100%; height: 100%; object-fit: cover; }
 
-.listing-info { display: flex; flex-direction: column; justify-content: center; gap: var(--space-8); }
+.listing-info { display: flex; flex-direction: column; gap: var(--space-8); }
 
 .listing-type {
   font-size: var(--text-caption);
@@ -333,25 +343,25 @@ button { font-family: inherit; cursor: pointer; }
 
 .listing-title {
   font-weight: 300;
-  font-size: var(--text-heading);
-  line-height: var(--leading-heading);
-  letter-spacing: var(--tracking-heading);
+  font-size: var(--text-subheading);
+  line-height: var(--leading-subheading);
+  letter-spacing: var(--tracking-subheading);
   margin: 0;
 }
 
 .listing-meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8) var(--space-24);
+  flex-direction: column;
+  gap: var(--space-4);
   font-size: var(--text-body-sm);
-  margin: var(--space-8) 0;
+  margin: var(--space-4) 0;
 }
 
 .listing-meta dt { font-weight: 400; text-transform: uppercase; font-size: var(--text-caption); margin: 0; }
-.listing-meta dd { font-weight: 300; font-size: var(--text-subheading); margin: var(--space-4) 0 0; }
-.listing-meta > div { min-width: 120px; }
+.listing-meta dd { font-weight: 300; font-size: var(--text-body-sm); margin: 0; }
+.listing-meta > div { display: flex; gap: var(--space-8); align-items: baseline; }
 
-.listing-tags { display: flex; flex-wrap: wrap; gap: var(--space-8); margin-top: var(--space-8); }
+.listing-tags { display: flex; flex-wrap: wrap; gap: var(--space-8); margin-top: var(--space-4); }
 
 .tag {
   border: 1px solid var(--color-charcoal);
@@ -361,7 +371,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .listing-link {
-  margin-top: var(--space-16);
+  margin-top: var(--space-8);
   display: inline-flex;
   align-items: center;
   gap: var(--space-8);
@@ -381,36 +391,46 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 /* -----------------------------------------------------------
-   푸터
+   푸터 — 미니멀 정보 블록 (가운데 정렬 예외 적용)
    ----------------------------------------------------------- */
 .site-footer { padding: var(--space-96) 0 var(--space-48); }
 
-.footer-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
-  gap: var(--space-48);
-  margin-bottom: var(--space-48);
-}
-
-.footer-brand .logo { display: inline-block; margin-bottom: var(--space-16); }
-.footer-brand p { font-size: var(--text-body-sm); max-width: 32ch; margin: 0; }
-
-.footer-col h3 {
-  font-size: var(--text-caption);
-  text-transform: uppercase;
-  font-weight: 400;
-  margin: 0 0 var(--space-16);
-}
-
-.footer-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-12); }
-.footer-col a { font-size: var(--text-body-sm); }
-.footer-col a:hover { color: var(--color-pine); }
-
-.footer-bottom {
+.footer-info {
   border-top: 1px solid var(--color-charcoal);
   padding-top: var(--space-24);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.footer-info-line {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-charcoal);
+}
+
+.footer-info-line strong { font-weight: 700; }
+
+.footer-info-name { font-size: var(--text-body); font-weight: 700; margin-bottom: var(--space-4); }
+
+.footer-info-bottom {
+  margin: var(--space-16) 0 0;
+  font-size: var(--text-caption);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-12);
+}
+
+/* 관리자 진입 — 홈 화면에는 절대 눈에 띄지 않도록 푸터 저작권 줄 끝에만 미세하게 배치 */
+.footer-admin-link {
+  opacity: 0.28;
   font-size: var(--text-caption);
 }
+
+.footer-admin-link:hover { opacity: 0.7; }
 
 /* -----------------------------------------------------------
    상세 페이지
@@ -650,21 +670,513 @@ button { font-family: inherit; cursor: pointer; }
 .form-success.is-visible { display: block; }
 
 /* -----------------------------------------------------------
+   관리자 페이지 (admin.html)
+   ----------------------------------------------------------- */
+.admin-body { min-height: 100vh; }
+
+.admin-shell { padding: var(--space-48) 0 var(--space-120); }
+
+/* 로그인 폼 — 그림자 없는 20px 라운드 캔버스 박스 */
+.admin-login-wrap {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24);
+}
+
+.admin-login-box {
+  background: var(--color-snow);
+  border: 1px solid var(--color-charcoal);
+  border-radius: var(--radius-card);
+  padding: var(--space-40);
+  max-width: 360px;
+  width: 100%;
+}
+
+.admin-login-box h1 {
+  font-weight: 300;
+  font-size: var(--text-heading);
+  margin: 0 0 var(--space-8);
+}
+
+.admin-login-box p {
+  font-size: var(--text-body-sm);
+  margin: 0 0 var(--space-24);
+  opacity: 0.7;
+}
+
+.admin-login-error {
+  display: none;
+  font-size: var(--text-body-sm);
+  color: #a3271f;
+  margin-top: var(--space-8);
+}
+
+.admin-login-error.is-visible { display: block; }
+
+/* 대시보드 공통 */
+.admin-hidden { display: none !important; }
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-48);
+  gap: var(--space-16);
+}
+
+.admin-topbar h1 {
+  font-weight: 300;
+  font-size: var(--text-heading-lg);
+  margin: 0;
+}
+
+.admin-logout {
+  border: 1px solid var(--color-charcoal);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  padding: var(--space-8) var(--space-20);
+  font-size: var(--text-body-sm);
+}
+
+.admin-logout:hover { background: var(--color-charcoal); color: var(--color-snow); }
+
+.admin-panel {
+  background: var(--color-snow);
+  border: 1px solid var(--color-charcoal);
+  border-radius: var(--radius-hero);
+  padding: var(--space-40);
+  margin-bottom: var(--space-48);
+}
+
+.admin-panel h2 {
+  font-weight: 300;
+  font-size: var(--text-heading);
+  margin: 0 0 var(--space-24);
+}
+
+.admin-panel h3 {
+  font-weight: 400;
+  font-size: var(--text-body);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caption);
+  margin: var(--space-24) 0 var(--space-16);
+}
+
+/* 매물 등록/수정 폼 */
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-20) var(--space-24);
+}
+
+.admin-form-grid .form-field.full { grid-column: 1 / -1; }
+
+.admin-form-grid select {
+  appearance: none;
+  border: none;
+  border-bottom: 1px solid var(--color-charcoal);
+  background: transparent;
+  padding: var(--space-8) 0;
+  font-family: inherit;
+  font-size: var(--text-body);
+  color: var(--color-charcoal);
+}
+
+.admin-form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  margin-top: var(--space-24);
+}
+
+.admin-submit {
+  background: var(--color-charcoal);
+  color: var(--color-snow);
+  border: none;
+  border-radius: var(--radius-button);
+  padding: var(--space-16) var(--space-24);
+  font-size: var(--text-body);
+}
+
+.admin-cancel-edit {
+  background: transparent;
+  border: 1px solid var(--color-charcoal);
+  border-radius: var(--radius-button);
+  padding: var(--space-16) var(--space-24);
+  font-size: var(--text-body);
+}
+
+.admin-form-status {
+  font-size: var(--text-body-sm);
+  color: var(--color-pine);
+}
+
+/* 매물/문의 표 — 숯색 테두리 */
+.admin-table-wrap {
+  border: 1px solid var(--color-charcoal);
+  border-radius: var(--radius-card);
+  overflow: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid var(--color-charcoal);
+  padding: var(--space-12) var(--space-16);
+  text-align: left;
+  font-size: var(--text-body-sm);
+  vertical-align: top;
+}
+
+.admin-table th {
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caption);
+  font-size: var(--text-caption);
+  font-weight: 400;
+  background: var(--color-paper);
+}
+
+.admin-table td.admin-row-actions { white-space: nowrap; }
+
+.admin-row-btn {
+  border: 1px solid var(--color-charcoal);
+  border-radius: var(--radius-chip);
+  background: transparent;
+  padding: var(--space-4) var(--space-12);
+  font-size: var(--text-caption);
+  margin-right: var(--space-8);
+}
+
+.admin-row-btn:hover { background: var(--color-charcoal); color: var(--color-snow); }
+
+.admin-empty-row td {
+  text-align: center;
+  opacity: 0.6;
+}
+
+.admin-guide {
+  font-size: var(--text-caption);
+  opacity: 0.65;
+  border-left: 1px solid var(--color-charcoal);
+  padding-left: var(--space-12);
+  margin: var(--space-16) 0 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .admin-form-grid { grid-template-columns: 1fr; }
+  .admin-topbar { flex-direction: column; align-items: flex-start; }
+}
+
+/* -----------------------------------------------------------
+   관리자 — 상단 탭 메뉴
+   ----------------------------------------------------------- */
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin-bottom: var(--space-24);
+}
+
+.admin-tab {
+  border: 1px solid var(--color-charcoal);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-charcoal);
+  padding: var(--space-8) var(--space-20);
+  font-size: var(--text-body-sm);
+  font-weight: 400;
+}
+
+.admin-tab:hover { background: var(--color-marigold); }
+
+.admin-tab.is-active {
+  background: var(--color-charcoal);
+  color: var(--color-snow);
+}
+
+.admin-tab-panel {
+  animation: anam-tab-fade 0.24s ease;
+}
+
+@keyframes anam-tab-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 키워드 관리 패널 */
+.admin-keyword-form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+.admin-keyword-form .form-field { flex: 1; max-width: 320px; margin-bottom: 0; }
+
+.admin-keyword-list { margin-top: var(--space-8); }
+
+.admin-keyword-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.admin-keyword-remove {
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: var(--text-body-sm);
+  line-height: 1;
+  opacity: 0.6;
+  padding: 0;
+}
+
+.admin-keyword-remove:hover { opacity: 1; color: #a3271f; }
+
+/* 문의고객 — 스텝 인디케이터 (확인 → 상담중 → 완료) */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.step-indicator-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border: none;
+  background: none;
+  padding: var(--space-4);
+  font-size: var(--text-caption);
+  color: var(--color-charcoal);
+  opacity: 0.45;
+  white-space: nowrap;
+}
+
+.step-indicator-item.is-current,
+.step-indicator-item.is-done { opacity: 1; }
+
+.step-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--color-charcoal);
+  background: transparent;
+}
+
+.step-indicator-item.is-done .step-indicator-dot { background: var(--color-pine); border-color: var(--color-pine); }
+.step-indicator-item.is-current .step-indicator-dot { background: var(--color-charcoal); }
+
+.step-indicator-item:hover { opacity: 1; }
+
+.step-indicator-line {
+  width: 12px;
+  height: 1px;
+  background: var(--color-charcoal);
+  opacity: 0.4;
+}
+
+/* 부동산정보 글쓰기 폼 — 본문 15px, Raus 여백 규칙 준수 */
+.admin-magazine-textarea {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* -----------------------------------------------------------
+   소개글 페이지 (about.html) — 에디토리얼 톤
+   ----------------------------------------------------------- */
+.about-main { padding-bottom: var(--space-120); }
+
+.about-article {
+  max-width: 760px;
+  margin: 0 auto;
+  padding-top: var(--space-24);
+  text-align: left;
+  font-family: 'Pretendard', var(--font-base);
+  font-size: 19px; /* PC 기준 — 모바일은 하단 반응형에서 17px로 축소 */
+  line-height: 1.8;
+  color: var(--color-charcoal);
+}
+
+.about-article p {
+  margin: 0 0 var(--space-40);
+}
+
+.about-lede {
+  font-size: 1.3em;
+  font-weight: 500;
+}
+
+.about-emphasis {
+  margin-top: var(--space-48) !important;
+  margin-bottom: var(--space-48) !important;
+  font-weight: 500;
+}
+
+.about-question {
+  margin-top: var(--space-48) !important;
+  font-weight: 500;
+  color: var(--color-pine);
+}
+
+.about-list { opacity: 0.92; }
+
+.about-signature {
+  margin-top: var(--space-96);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.about-signature-date {
+  font-family: var(--font-base);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+  opacity: 0.7;
+}
+
+.about-signature-name {
+  font-family: 'Nanum Pen Script', cursive;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--color-charcoal);
+}
+
+/* -----------------------------------------------------------
+   부동산정보 매거진 목록 (info.html)
+   ----------------------------------------------------------- */
+.magazine-section { padding-bottom: var(--space-120); }
+
+.magazine-heading {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-8);
+  margin-bottom: var(--space-40);
+}
+
+.magazine-page-title {
+  font-weight: 300;
+  font-size: var(--text-heading-lg);
+  margin: 0;
+}
+
+.magazine-page-sub {
+  font-size: var(--text-body-sm);
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* 메인 매물 리스트와 동일한 톤의 2-Column Grid — 감성적인 큰 썸네일 카드 */
+.magazine-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-40) var(--space-24);
+}
+
+.magazine-card { display: flex; flex-direction: column; gap: var(--space-16); }
+
+.magazine-photo {
+  display: block;
+  border-radius: var(--radius-hero);
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+
+.magazine-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.magazine-info { display: flex; flex-direction: column; gap: var(--space-8); }
+
+.magazine-date {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caption);
+  opacity: 0.6;
+}
+
+.magazine-title {
+  font-weight: 300;
+  font-size: var(--text-heading-sm);
+  line-height: var(--leading-heading-sm);
+  margin: 0;
+}
+
+.magazine-title a:hover { color: var(--color-pine); }
+
+.magazine-excerpt {
+  font-size: var(--text-body-sm);
+  opacity: 0.75;
+  margin: 0;
+}
+
+/* -----------------------------------------------------------
+   부동산정보 상세 (info-detail.html)
+   ----------------------------------------------------------- */
+.magazine-detail-main { padding-bottom: var(--space-120); }
+
+.magazine-detail {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.magazine-detail-date {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caption);
+  opacity: 0.6;
+}
+
+.magazine-detail-title {
+  font-weight: 300;
+  font-size: var(--text-heading-lg);
+  line-height: var(--leading-heading-lg);
+  margin: var(--space-8) 0 var(--space-24);
+}
+
+.magazine-detail-thumb {
+  border-radius: var(--radius-hero);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  margin-bottom: var(--space-40);
+}
+
+.magazine-detail-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.magazine-detail-body {
+  font-size: var(--text-subheading);
+  line-height: 1.8;
+}
+
+.magazine-detail-body p { margin: 0 0 var(--space-24); }
+
+/* -----------------------------------------------------------
    반응형
    ----------------------------------------------------------- */
 @media (max-width: 900px) {
   .hero-grid { grid-template-columns: 1fr; }
-  .listing-card { grid-template-columns: 1fr; }
-  .listing-card:nth-child(even) { grid-template-columns: 1fr; }
-  .listing-card .listing-photo,
-  .listing-card:nth-child(even) .listing-photo { order: 1; }
-  .listing-card .listing-info,
-  .listing-card:nth-child(even) .listing-info { order: 2; }
+  /* 모바일/핸드폰 화면 기준 — 1열에 2개 매물(2-Column Grid) */
+  .listing-list { grid-template-columns: repeat(2, 1fr); gap: var(--space-24) var(--space-16); }
   .detail-grid { grid-template-columns: 1fr; }
-  .footer-grid { grid-template-columns: 1fr; gap: var(--space-24); }
   .filter-bar { border-radius: var(--radius-card); }
+  .magazine-list { gap: var(--space-24) var(--space-16); }
 }
 
 @media (max-width: 600px) {
   .main-nav .nav-links { display: none; }
+}
+
+@media (max-width: 760px) {
+  .about-article { font-size: 17px; }
+}
+
+@media (max-width: 480px) {
+  .magazine-list { grid-template-columns: 1fr; }
 }

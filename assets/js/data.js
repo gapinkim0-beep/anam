@@ -364,3 +364,181 @@ const LISTINGS = [
     updatedAt: "2026-08-29T12:00:00"
   }
 ];
+
+/* =========================================================
+   라이프스타일 필터 키워드 — 관리자 [키워드] 탭에서 추가/수정합니다.
+   index.html 필터바(#filterFeatures), admin.html 매물 등록 폼(#fFeatures)
+   양쪽 모두 이 목록을 기준으로 칩(Chip)을 그려줍니다.
+   ========================================================= */
+const KEYWORD_STORAGE_KEY = "anam-keywords";
+const DEFAULT_KEYWORDS = ["채광", "위치", "평수", "풀옵션", "리모델링", "인테리어"];
+
+function anamGetKeywords() {
+  try {
+    const raw = localStorage.getItem(KEYWORD_STORAGE_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr) && arr.length) return arr;
+    }
+  } catch (err) {
+    console.warn("[anam] 키워드 목록을 읽지 못했습니다:", err);
+  }
+  return [...DEFAULT_KEYWORDS];
+}
+
+function anamSetKeywords(list) {
+  localStorage.setItem(KEYWORD_STORAGE_KEY, JSON.stringify(list));
+  document.dispatchEvent(new CustomEvent("anam:keywords-updated"));
+}
+
+/* =========================================================
+   anam real estate agency — 부동산 정보 매거진 목업 데이터
+   info.html(목록) / info-detail.html(상세)에서 사용합니다.
+   admin.html [부동산정보] 탭에서 작성한 글이 이 배열을 대체합니다.
+   ========================================================= */
+const MAGAZINE_POSTS = [
+  {
+    id: 1,
+    title: "2026년 하반기, 안암·고려대 원룸 시세는 어떻게 움직일까요?",
+    thumbnail: "https://picsum.photos/seed/anam-mag-01/1000/750",
+    content:
+      "안녕하세요, anam real estate agency입니다.\n\n최근 안암·고려대 일대 원룸 시세를 살펴보면, 신축 오피스텔을 중심으로 보증금은 소폭 상승했지만 월세는 지난해와 비슷한 수준을 유지하고 있습니다.\n\n특히 학기가 시작되는 3월과 9월 직전에는 매물이 빠르게 소진되는 경향이 있어, 이사 계획이 있으시다면 최소 1~2개월 전에는 매물을 미리 살펴보시는 것을 추천드립니다.\n\n다음 주에는 임대차 계약 시 놓치기 쉬운 특약사항 체크리스트를 준비해 오겠습니다. 궁금하신 점은 언제든 '문의하기'로 편하게 남겨주세요.",
+    createdAt: "2026-09-01T09:00:00"
+  },
+  {
+    id: 2,
+    title: "전세 계약 전 꼭 확인해야 할 등기부등본 체크포인트",
+    thumbnail: "https://picsum.photos/seed/anam-mag-02/1000/750",
+    content:
+      "전세 계약을 앞두고 계신가요?\n\n계약 전 등기부등본에서 꼭 확인해야 할 세 가지를 정리해드립니다.\n\n1) 근저당권 설정 여부와 채권최고액\n2) 소유자와 임대인이 동일인인지 여부\n3) 가압류·가처분 등 권리 제한 사항\n\n특히 전세보증금이 매매가 대비 지나치게 높은 '깡통전세'는 반드시 피해야 합니다. anam은 계약 전 등기부등본을 함께 확인해 드리고, 필요 시 전세보증보험 가입 절차도 안내해 드리고 있습니다.",
+    createdAt: "2026-08-24T09:00:00"
+  }
+];
+
+/* ---------------------------------------------------------
+   데모 모드(로컬 저장) 브리지 — Supabase 미연동 상태에서 admin.html이
+   저장한 매물을 메인/상세 페이지에도 그대로 반영합니다.
+   Supabase가 연동되면 아래 anamLoadListingsFromSupabase가 이 값을 덮어씁니다.
+   --------------------------------------------------------- */
+(function anamApplyLocalAdminListings() {
+  try {
+    const raw = localStorage.getItem("anam-admin-listings");
+    if (!raw) return;
+    const local = JSON.parse(raw);
+    if (Array.isArray(local) && local.length) {
+      LISTINGS.length = 0;
+      LISTINGS.push(...local);
+    }
+  } catch (err) {
+    console.warn("[anam] 로컬 관리자 데이터 로드 실패:", err);
+  }
+})();
+
+/* ---------------------------------------------------------
+   부동산정보 매거진 — 데모 모드(로컬 저장) 브리지.
+   admin.html [부동산정보] 탭에서 저장한 글을 info.html/info-detail.html에도
+   그대로 반영합니다. Supabase가 연동되면 anamLoadMagazineFromSupabase가 덮어씁니다.
+   --------------------------------------------------------- */
+(function anamApplyLocalMagazinePosts() {
+  try {
+    const raw = localStorage.getItem("anam-admin-magazine");
+    if (!raw) return;
+    const local = JSON.parse(raw);
+    if (Array.isArray(local) && local.length) {
+      MAGAZINE_POSTS.length = 0;
+      MAGAZINE_POSTS.push(...local);
+    }
+  } catch (err) {
+    console.warn("[anam] 로컬 매거진 데이터 로드 실패:", err);
+  }
+})();
+
+function anamMapSupabaseMagazineRow(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    thumbnail: row.thumbnail || "https://picsum.photos/seed/anam-mag-fallback/1000/750",
+    content: row.content || "",
+    createdAt: row.created_at || new Date().toISOString()
+  };
+}
+
+async function anamLoadMagazineFromSupabase() {
+  if (!window.anamSupabase) return; // 미연동 상태 — 목업 데이터 유지
+  try {
+    const { data, error } = await window.anamSupabase
+      .from("magazine_posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    if (Array.isArray(data)) {
+      MAGAZINE_POSTS.length = 0;
+      MAGAZINE_POSTS.push(...data.map(anamMapSupabaseMagazineRow));
+      document.dispatchEvent(new CustomEvent("anam:magazine-updated"));
+    }
+  } catch (err) {
+    console.warn("[anam] Supabase 매거진 조회 실패, 목업 데이터를 사용합니다:", err);
+  }
+}
+
+/* ---------------------------------------------------------
+   Supabase 연동 — assets/js/supabase-client.js에서 URL/KEY를
+   채워 넣으면, 위 목업 배열을 실제 listings 테이블 데이터로
+   교체하고 "anam:listings-updated" 이벤트를 쏴서 화면을 갱신합니다.
+   미연동 상태라면 아무 일도 하지 않고 목업 데이터를 그대로 씁니다.
+   --------------------------------------------------------- */
+function anamMapSupabaseRow(row) {
+  // admin.html 등록 폼은 한글 값만 입력받으므로, 영문(*_En) 컬럼이 없으면
+  // 한글 값을 그대로 영문 자리에도 사용해 EN 토글이 깨지지 않도록 합니다.
+  return {
+    id: row.id,
+    type: row.type,
+    typeEn: row.type_en || row.type,
+    title: row.title,
+    titleEn: row.title_en || row.title,
+    location: row.location,
+    locationEn: row.location_en || row.location,
+    leaseType: row.lease_type,
+    leaseTypeEn: row.lease_type_en || row.lease_type,
+    deposit: Number(row.deposit) || 0,
+    monthlyRent: Number(row.monthly_rent) || 0,
+    moveInDate: row.move_in_date,
+    area: row.area || "",
+    structure: row.structure || "",
+    structureEn: row.structure_en || row.structure || "",
+    maintenanceFee: row.maintenance_fee || "",
+    maintenanceFeeEn: row.maintenance_fee_en || row.maintenance_fee || "",
+    options: row.options || "",
+    optionsEn: row.options_en || row.options || "",
+    etc: row.etc || "",
+    etcEn: row.etc_en || row.etc || "",
+    features: row.features || [],
+    keywords: row.keywords || [],
+    keywordsEn: row.keywords_en || row.keywords || [],
+    description: row.description || "",
+    descriptionEn: row.description_en || row.description || "",
+    images: row.images && row.images.length ? row.images : ["https://picsum.photos/seed/anam-fallback/1200/900"],
+    updatedAt: row.updated_at || new Date().toISOString()
+  };
+}
+
+async function anamLoadListingsFromSupabase() {
+  if (!window.anamSupabase) return; // 미연동 상태 — 목업 데이터 유지
+  try {
+    const { data, error } = await window.anamSupabase
+      .from("listings")
+      .select("*")
+      .order("updated_at", { ascending: false });
+    if (error) throw error;
+    if (Array.isArray(data)) {
+      LISTINGS.length = 0;
+      LISTINGS.push(...data.map(anamMapSupabaseRow));
+      document.dispatchEvent(new CustomEvent("anam:listings-updated"));
+    }
+  } catch (err) {
+    console.warn("[anam] Supabase 매물 조회 실패, 목업 데이터를 사용합니다:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", anamLoadListingsFromSupabase);
+document.addEventListener("DOMContentLoaded", anamLoadMagazineFromSupabase);

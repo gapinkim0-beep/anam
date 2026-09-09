@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>anam real estate agency — 라이프스타일을 중개합니다</title>
-<meta name="description" content="안암·고려대 일대 원룸, 주택, 상가 임대차 중개. 라이프스타일을 중개합니다." />
+<title>부동산정보 — anam real estate agency</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet" />
@@ -15,13 +14,12 @@
 <header class="site-header">
   <div class="wrap">
     <a href="index.html" class="logo">
-      <!-- 로고 이미지 — image/logo 폴더의 원본 파일 교체 시 자동 반영됩니다 -->
       <img src="assets/images/logo.jpg" alt="anam real estate agency" />
     </a>
     <nav class="main-nav">
       <div class="nav-links">
         <a href="about.html" data-i18n="nav.about">소개글</a>
-        <a href="info.html" data-i18n="nav.info">부동산정보</a>
+        <a href="info.html" class="is-active" data-i18n="nav.info">부동산정보</a>
         <a href="#" id="navContactLink" data-i18n="nav.contact">문의</a>
       </div>
       <button class="lang-toggle" type="button" aria-label="Toggle language">
@@ -32,55 +30,19 @@
   </div>
 </header>
 
-<main>
-  <section class="hero" id="about">
-    <div class="wrap hero-grid">
-      <div class="hero-copy">
-        <h1 class="hero-title" data-i18n="hero.title">변화하는 삶의 방식에 맞춰</h1>
-        <p class="hero-slogan-sub" data-i18n="hero.sub">라이프 스타일에 맞는 집을 하우스 메이트처럼 찾아드릴께요.</p>
-      </div>
-      <!-- 메인 베너 이미지 — image/네비게이션 바 폴더 1,2,3 순서대로 사용 -->
-      <div class="hero-images">
-        <img class="hero-img-a" src="assets/images/hero-1.jpg" alt="anam listing photo 1" />
-        <img class="hero-img-b" src="assets/images/hero-2.jpg" alt="anam listing photo 2" />
-        <img class="hero-img-c" src="assets/images/hero-3.jpg" alt="anam listing photo 3" />
-      </div>
+<div class="wrap detail-header">
+  <a href="info.html" class="back-link">← 목록으로</a>
+</div>
+
+<main class="magazine-detail-main">
+  <article class="wrap magazine-detail">
+    <span id="postDate" class="magazine-detail-date"></span>
+    <h1 id="postTitle" class="magazine-detail-title"></h1>
+    <div class="magazine-detail-thumb">
+      <img id="postThumb" src="" alt="" />
     </div>
-  </section>
-
-  <section id="listings" class="listings">
-    <div class="wrap">
-      <form id="filterForm" class="filter-bar">
-        <div class="filter-group">
-          <label class="filter-label" for="filterType" data-i18n="filter.type.label">매물 종류</label>
-          <select id="filterType" class="filter-select">
-            <option value="all" data-i18n="filter.type.all">전체</option>
-            <option value="오피스텔">오피스텔</option>
-            <option value="주택">주택</option>
-            <option value="상가">상가</option>
-          </select>
-        </div>
-
-        <div class="filter-divider"></div>
-
-        <div class="filter-group grow">
-          <label class="filter-label" data-i18n="filter.feature.label">매물 특징</label>
-          <div id="filterFeatures" class="chip-group">
-            <!-- 관리자 [키워드] 탭에서 등록한 키워드가 assets/js/main.js에 의해 여기 동적으로 렌더링됩니다 -->
-          </div>
-        </div>
-
-        <button type="submit" class="filter-submit" data-i18n="filter.submit">검색</button>
-      </form>
-
-      <div class="section-heading">
-        <span id="listingCount" class="count">10건</span>
-      </div>
-
-      <div id="listingList" class="listing-list"></div>
-      <p id="emptyState" class="empty-state" data-i18n="list.empty" style="display:none;">조건에 맞는 매물이 없습니다. 필터를 조정해 보세요.</p>
-    </div>
-  </section>
+    <div id="postBody" class="magazine-detail-body"></div>
+  </article>
 </main>
 
 <footer class="site-footer">
@@ -91,7 +53,6 @@
     <p class="footer-info-line"><strong>중개업등록번호</strong> 11410-2025-00025 ｜ <strong>사업자등록번호</strong> 689-13-02572</p>
     <p class="footer-info-bottom">
       <span data-i18n="footer.rights">© 2026 anam real estate agency. All rights reserved.</span>
-      <!-- 관리자 전용 진입 링크 — 홈 화면에는 노출하지 않고 여기 미세하게만 배치 -->
       <a href="admin.html" class="footer-admin-link" aria-label="Admin">·</a>
     </p>
   </div>
@@ -135,6 +96,6 @@
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/inquiry-modal.js"></script>
-<script src="assets/js/main.js"></script>
+<script src="assets/js/info-detail.js"></script>
 </body>
 </html>
