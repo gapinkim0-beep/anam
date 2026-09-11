@@ -52,6 +52,15 @@
     });
   }
 
+  // 매물 주소(location)를 기준으로 구글 지도를 임베드합니다.
+  // API 키 없이도 쓸 수 있는 'output=embed' 검색 임베드 방식을 사용합니다.
+  function renderMap() {
+    const mapEl = document.getElementById("listingMap");
+    if (!mapEl) return;
+    const address = lang() === "en" ? (item.locationEn || item.location) : item.location;
+    mapEl.src = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
+  }
+
   function render() {
     const isEn = lang() === "en";
     document.title = `${isEn ? item.titleEn : item.title} — anam real estate agency`;
@@ -77,6 +86,7 @@
       .join("");
 
     renderGallery();
+    renderMap();
 
     // 문의하기 모달은 assets/js/inquiry-modal.js가 공통으로 제어합니다.
     // 현재 매물 정보를 넘겨줘서 문의 접수 시 어떤 매물 문의인지 함께 저장되도록 합니다.

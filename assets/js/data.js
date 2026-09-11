@@ -420,7 +420,7 @@ const MAGAZINE_POSTS = [
    저장한 매물을 메인/상세 페이지에도 그대로 반영합니다.
    Supabase가 연동되면 아래 anamLoadListingsFromSupabase가 이 값을 덮어씁니다.
    --------------------------------------------------------- */
-(function anamApplyLocalAdminListings() {
+function anamApplyLocalAdminListings() {
   try {
     const raw = localStorage.getItem("anam-admin-listings");
     if (!raw) return;
@@ -432,14 +432,24 @@ const MAGAZINE_POSTS = [
   } catch (err) {
     console.warn("[anam] 로컬 관리자 데이터 로드 실패:", err);
   }
-})();
+}
+anamApplyLocalAdminListings();
+
+// Supabase 미연동(데모) 상태에서, admin.html을 다른 탭/창에서 열어 매물을 저장하면
+// 이미 열려 있는 index.html/detail.html 탭에도 새로고침 없이 바로 반영되도록 합니다.
+window.addEventListener("storage", (e) => {
+  if (e.key === "anam-admin-listings") {
+    anamApplyLocalAdminListings();
+    document.dispatchEvent(new CustomEvent("anam:listings-updated"));
+  }
+});
 
 /* ---------------------------------------------------------
    부동산정보 매거진 — 데모 모드(로컬 저장) 브리지.
    admin.html [부동산정보] 탭에서 저장한 글을 info.html/info-detail.html에도
    그대로 반영합니다. Supabase가 연동되면 anamLoadMagazineFromSupabase가 덮어씁니다.
    --------------------------------------------------------- */
-(function anamApplyLocalMagazinePosts() {
+function anamApplyLocalMagazinePosts() {
   try {
     const raw = localStorage.getItem("anam-admin-magazine");
     if (!raw) return;
@@ -451,7 +461,15 @@ const MAGAZINE_POSTS = [
   } catch (err) {
     console.warn("[anam] 로컬 매거진 데이터 로드 실패:", err);
   }
-})();
+}
+anamApplyLocalMagazinePosts();
+
+window.addEventListener("storage", (e) => {
+  if (e.key === "anam-admin-magazine") {
+    anamApplyLocalMagazinePosts();
+    document.dispatchEvent(new CustomEvent("anam:magazine-updated"));
+  }
+});
 
 function anamMapSupabaseMagazineRow(row) {
   return {

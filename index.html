@@ -51,6 +51,19 @@
   <section id="listings" class="listings">
     <div class="wrap">
       <form id="filterForm" class="filter-bar">
+        <div class="filter-group search-group">
+          <label class="filter-label" for="filterLocation" data-i18n="filter.location.label">위치 검색</label>
+          <div class="search-input-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <input type="search" id="filterLocation" class="search-input" data-i18n-placeholder="filter.location.placeholder" placeholder="지역명으로 검색 (예: 안암동)" />
+          </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
         <div class="filter-group">
           <label class="filter-label" for="filterType" data-i18n="filter.type.label">매물 종류</label>
           <select id="filterType" class="filter-select">

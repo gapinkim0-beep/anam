@@ -234,6 +234,31 @@ button { font-family: inherit; cursor: pointer; }
 
 .filter-group { display: flex; flex-direction: column; gap: var(--space-8); }
 .filter-group.grow { flex: 1; min-width: 280px; }
+.filter-group.search-group { min-width: 220px; }
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  border-bottom: 1px solid var(--color-charcoal);
+  padding: 0 0 var(--space-4);
+}
+
+.search-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--color-charcoal); }
+
+.search-input {
+  appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: var(--text-body);
+  font-family: inherit;
+  color: var(--color-charcoal);
+  width: 100%;
+}
+
+.search-input::placeholder { color: var(--color-charcoal); opacity: 0.55; }
+.search-input::-webkit-search-cancel-button { appearance: none; }
 
 .filter-label {
   font-size: var(--text-caption);
@@ -573,6 +598,29 @@ button { font-family: inherit; cursor: pointer; }
 .spec-table td.wide { }
 
 .keyword-row td { }
+
+/* -----------------------------------------------------------
+   상세페이지 위치 지도 (Google Maps 임베드)
+   ----------------------------------------------------------- */
+.map-section { margin-top: var(--space-96); }
+
+.map-heading {
+  font-size: var(--text-heading-sm);
+  font-weight: 400;
+  margin: 0 0 var(--space-24);
+}
+
+.map-embed-wrap {
+  border-radius: var(--radius-hero);
+  overflow: hidden;
+  aspect-ratio: 16 / 7;
+}
+
+.map-embed { width: 100%; height: 100%; border: 0; display: block; }
+
+@media (max-width: 720px) {
+  .map-embed-wrap { aspect-ratio: 4 / 3; border-radius: var(--radius-card); }
+}
 
 /* -----------------------------------------------------------
    문의하기 모달

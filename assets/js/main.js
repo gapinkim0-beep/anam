@@ -9,8 +9,9 @@
   const typeSelect = document.getElementById("filterType");
   const chipGroup = document.getElementById("filterFeatures");
   const filterForm = document.getElementById("filterForm");
+  const locationInput = document.getElementById("filterLocation");
 
-  const state = { type: "all", features: new Set() };
+  const state = { type: "all", features: new Set(), query: "" };
 
   function lang() { return LangStore.get(); }
 
@@ -40,6 +41,12 @@
       for (const f of state.features) {
         if (!item.features.includes(f)) return false;
       }
+    }
+    if (state.query) {
+      const q = state.query;
+      const location = (item.location || "").toLowerCase();
+      const locationEn = (item.locationEn || "").toLowerCase();
+      if (!location.includes(q) && !locationEn.includes(q)) return false;
     }
     return true;
   }
@@ -132,6 +139,12 @@
 
   typeSelect.addEventListener("change", () => {
     state.type = typeSelect.value;
+    render();
+  });
+
+  // 위치 검색 — 입력할 때마다 실시간으로 매물 목록을 좁혀줍니다.
+  locationInput.addEventListener("input", () => {
+    state.query = locationInput.value.trim().toLowerCase();
     render();
   });
 
