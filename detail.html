@@ -41,21 +41,26 @@
         <img id="mainImage" src="" alt="" />
       </div>
       <div id="galleryThumbs" class="gallery-thumbs"></div>
-
-      <section class="detail-desc-section" style="margin-top: var(--space-48);">
-        <p class="admin-note" data-i18n="detail.admin_note">관리자 입력 영역 — 매물 소개글은 관리자가 언제든 동적으로 수정할 수 있습니다.</p>
-        <p id="listingDesc" class="detail-desc"></p>
-      </section>
     </div>
 
     <div class="detail-side">
       <span id="listingType" class="detail-eyebrow"></span>
       <h1 id="listingTitle" class="detail-title"></h1>
       <p id="listingLocation" class="hero-sub"></p>
-      <p id="listingPrice" class="detail-price"></p>
+      <div class="detail-price-block">
+        <span id="listingLeaseType" class="detail-lease-type"></span>
+        <p id="listingPrice" class="detail-price"></p>
+      </div>
       <button id="contactBtn" class="cta-button" data-i18n="detail.contact">문의하기</button>
     </div>
   </div>
+
+  <!-- 소개글 — 아래 매물 정보 표(spec-table)와 폭을 맞추기 위해 갤러리 칼럼이 아닌
+       전체 너비(.wrap) 섹션으로 뺐습니다. -->
+  <section class="wrap detail-desc-section">
+    <p class="admin-note" data-i18n="detail.admin_note">관리자 입력 영역 — 매물 소개글은 관리자가 언제든 동적으로 수정할 수 있습니다.</p>
+    <div id="listingDesc" class="detail-desc"></div>
+  </section>
 
   <div class="wrap spec-section">
     <div class="spec-table-wrap">
@@ -78,6 +83,12 @@
           <td id="specStructure"></td>
           <th data-i18n="spec.maintenance">관리비</th>
           <td id="specMaintenance"></td>
+        </tr>
+        <tr>
+          <th data-i18n="spec.floor">층수</th>
+          <td id="specFloor"></td>
+          <th data-i18n="spec.builtYear">준공년도</th>
+          <td id="specBuiltYear"></td>
         </tr>
         <tr>
           <th data-i18n="spec.options">옵션</th>

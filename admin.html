@@ -43,6 +43,7 @@
     <!-- 상단 탭 메뉴 — 클릭 시 아래 4개 대시보드 화면이 부드럽게 전환됩니다 -->
     <nav class="admin-tabs" role="tablist">
       <button type="button" class="admin-tab is-active" data-tab="listings" role="tab" aria-selected="true">매물수정</button>
+      <button type="button" class="admin-tab" data-tab="options" role="tab" aria-selected="false">매물종류/임대방식</button>
       <button type="button" class="admin-tab" data-tab="keywords" role="tab" aria-selected="false">키워드</button>
       <button type="button" class="admin-tab" data-tab="inquiries" role="tab" aria-selected="false">문의고객</button>
       <button type="button" class="admin-tab" data-tab="magazine" role="tab" aria-selected="false">부동산정보</button>
@@ -63,24 +64,25 @@
 
             <div class="form-field">
               <label for="fType">매물 종류</label>
-              <select id="fType" required>
-                <option value="오피스텔">오피스텔</option>
-                <option value="주택">주택</option>
-                <option value="상가">상가</option>
-              </select>
+              <select id="fType" required></select>
             </div>
 
             <div class="form-field">
               <label for="fLeaseType">임대방식</label>
-              <select id="fLeaseType" required>
-                <option value="월세">월세</option>
-                <option value="전세">전세</option>
-              </select>
+              <select id="fLeaseType" required></select>
             </div>
 
             <div class="form-field full">
               <label for="fAddress">주소</label>
-              <input type="text" id="fAddress" required placeholder="예) 서울 성북구 안암동" />
+              <div class="address-search-row">
+                <input type="text" id="fAddress" required placeholder="주소 검색 버튼으로 도로명 주소를 찾아주세요" />
+                <button type="button" id="addressSearchBtn" class="admin-row-btn admin-row-btn-wide">주소 검색</button>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="fUnitNumber">호실 (관리자 전용, 외부 미노출)</label>
+              <input type="text" id="fUnitNumber" placeholder="예) 302호" />
             </div>
 
             <div class="form-field">
@@ -99,6 +101,11 @@
             </div>
 
             <div class="form-field">
+              <label for="fBuiltYear">준공년도</label>
+              <input type="text" id="fBuiltYear" placeholder="예) 2020년" />
+            </div>
+
+            <div class="form-field">
               <label for="fMoveInDate">입주일</label>
               <input type="date" id="fMoveInDate" />
             </div>
@@ -106,6 +113,16 @@
             <div class="form-field">
               <label for="fStructure">구조</label>
               <input type="text" id="fStructure" placeholder="예) 원룸 (방1, 욕실1)" />
+            </div>
+
+            <div class="form-field">
+              <label for="fTotalFloors">건물 총 층수</label>
+              <input type="text" id="fTotalFloors" placeholder="예) 5" />
+            </div>
+
+            <div class="form-field">
+              <label for="fCurrentFloor">해당 층수</label>
+              <input type="text" id="fCurrentFloor" placeholder="예) 3" />
             </div>
 
             <div class="form-field">
@@ -119,8 +136,8 @@
             </div>
 
             <div class="form-field full">
-              <label for="fDescription">소개글</label>
-              <textarea id="fDescription" rows="3" placeholder="상세페이지에 노출될 매물 소개 문구"></textarea>
+              <label for="fDescription">소개글 (줄바꿈으로 문단을 구분해 입력해 주세요)</label>
+              <textarea id="fDescription" rows="6" placeholder="상세페이지에 노출될 매물 소개 문구를 문단별로 줄바꿈해서 입력해 주세요."></textarea>
             </div>
 
             <div class="form-field full">
@@ -134,13 +151,13 @@
             </div>
 
             <div class="form-field full">
-              <label for="fMainImage">대표 이미지 (메인 화면 및 상세페이지 첫 사진)</label>
-              <input type="file" id="fMainImage" accept="image/*" />
-            </div>
-
-            <div class="form-field full">
-              <label for="fSubImages">상세페이지 서브 이미지 (여러 장 선택 가능)</label>
-              <input type="file" id="fSubImages" accept="image/*" multiple />
+              <label>매물 이미지 (첫 번째 사진이 대표 이미지로 메인 화면·상세페이지에 노출됩니다)</label>
+              <div id="imageManager" class="image-manager"></div>
+              <input type="file" id="fImageAdd" accept="image/*" multiple />
+              <p class="admin-guide">
+                사진을 추가로 선택하면 뒤에 이어붙습니다. 각 사진의 ↑↓ 버튼으로 순서를 바꾸거나 ×로 삭제할 수 있고,
+                맨 앞 사진에는 "대표" 표시가 붙습니다.
+              </p>
             </div>
           </div>
 
@@ -174,6 +191,41 @@
             <tbody id="listingTableBody"></tbody>
           </table>
         </div>
+      </section>
+    </div>
+
+    <!-- ================= [매물종류/임대방식] 탭 ================= -->
+    <div class="admin-tab-panel admin-hidden" data-tab-panel="options">
+      <section class="admin-panel">
+        <h2>매물 종류 관리</h2>
+        <form id="listingTypeForm" class="admin-keyword-form">
+          <div class="form-field">
+            <label for="fListingTypeNew">새 매물 종류 추가</label>
+            <input type="text" id="fListingTypeNew" placeholder="예) 빌라" />
+          </div>
+          <button type="submit" class="admin-submit">추가하기</button>
+        </form>
+        <div id="listingTypeChipList" class="chip-group admin-keyword-list"></div>
+        <p class="admin-guide">
+          여기서 추가·삭제한 매물 종류는 [매물수정] 등록 폼의 '매물 종류' 선택지와 메인 화면(index.html)
+          필터바의 '매물 종류' 드롭다운에 즉시 반영됩니다.
+        </p>
+      </section>
+
+      <section class="admin-panel">
+        <h2>임대방식 관리</h2>
+        <form id="leaseTypeForm" class="admin-keyword-form">
+          <div class="form-field">
+            <label for="fLeaseTypeNew">새 임대방식 추가</label>
+            <input type="text" id="fLeaseTypeNew" placeholder="예) 매매" />
+          </div>
+          <button type="submit" class="admin-submit">추가하기</button>
+        </form>
+        <div id="leaseTypeChipList" class="chip-group admin-keyword-list"></div>
+        <p class="admin-guide">
+          '전세'라는 이름의 임대방식만 보증금 단독 표시(월세 없음)로 계산됩니다. 그 외 이름을 추가하면
+          월세 항목까지 함께 입력받는 방식으로 동작합니다.
+        </p>
       </section>
     </div>
 
@@ -277,6 +329,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/data.js"></script>
+<!-- 도로명 주소 검색 (Daum/카카오 우편번호 서비스, API 키 불필요) -->
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="assets/js/admin.js"></script>
 </body>
 </html>

@@ -391,6 +391,94 @@ function anamSetKeywords(list) {
   document.dispatchEvent(new CustomEvent("anam:keywords-updated"));
 }
 
+/* ---------------------------------------------------------
+   키워드 — Supabase 연동. admin.html [키워드] 탭에서 등록/삭제한 값을
+   keywords 테이블에서 읽어와 localStorage 캐시(anamGetKeywords가 읽는 값)를
+   덮어쓰고, index.html 필터바 / admin.html 매물 등록 폼 칩을 갱신합니다.
+   미연동 상태라면 아무 일도 하지 않고 로컬 목록(DEFAULT_KEYWORDS)을 그대로 씁니다.
+   --------------------------------------------------------- */
+async function anamLoadKeywordsFromSupabase() {
+  if (!window.anamSupabase) return; // 미연동 상태 — 로컬 목록 유지
+  try {
+    const { data, error } = await window.anamSupabase
+      .from("keywords")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    if (Array.isArray(data)) {
+      const labels = data.map((row) => row.label);
+      localStorage.setItem(KEYWORD_STORAGE_KEY, JSON.stringify(labels));
+      document.dispatchEvent(new CustomEvent("anam:keywords-updated"));
+    }
+  } catch (err) {
+    console.warn("[anam] Supabase 키워드 조회 실패, 로컬 데이터를 사용합니다:", err);
+  }
+}
+
+/* ---------------------------------------------------------
+   매물 종류 / 임대방식 — admin.html [매물종류·임대방식] 탭에서
+   추가/수정/삭제할 수 있도록 keywords와 동일한 패턴으로 관리합니다.
+   - index.html 필터바(#filterType), admin.html 매물 등록 폼(#fType/#fLeaseType)
+     모두 이 목록을 기준으로 옵션을 그려줍니다.
+   --------------------------------------------------------- */
+function anamCreateLabelListStore(storageKey, defaultList, tableName, eventName) {
+  function get() {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr) && arr.length) return arr;
+      }
+    } catch (err) {
+      console.warn(`[anam] ${tableName} 목록을 읽지 못했습니다:`, err);
+    }
+    return [...defaultList];
+  }
+
+  function set(list) {
+    localStorage.setItem(storageKey, JSON.stringify(list));
+    document.dispatchEvent(new CustomEvent(eventName));
+  }
+
+  async function loadFromSupabase() {
+    if (!window.anamSupabase) return; // 미연동 상태 — 로컬 목록 유지
+    try {
+      const { data, error } = await window.anamSupabase
+        .from(tableName)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      if (Array.isArray(data)) {
+        const labels = data.map((row) => row.label);
+        localStorage.setItem(storageKey, JSON.stringify(labels));
+        document.dispatchEvent(new CustomEvent(eventName));
+      }
+    } catch (err) {
+      console.warn(`[anam] Supabase ${tableName} 조회 실패, 로컬 데이터를 사용합니다:`, err);
+    }
+  }
+
+  return { get, set, loadFromSupabase };
+}
+
+const LISTING_TYPE_STORAGE_KEY = "anam-listing-types";
+const DEFAULT_LISTING_TYPES = ["오피스텔", "주택", "상가"];
+const anamListingTypeStore = anamCreateLabelListStore(
+  LISTING_TYPE_STORAGE_KEY, DEFAULT_LISTING_TYPES, "listing_types", "anam:listing-types-updated"
+);
+function anamGetListingTypes() { return anamListingTypeStore.get(); }
+function anamSetListingTypes(list) { anamListingTypeStore.set(list); }
+function anamLoadListingTypesFromSupabase() { return anamListingTypeStore.loadFromSupabase(); }
+
+const LEASE_TYPE_STORAGE_KEY = "anam-lease-types";
+const DEFAULT_LEASE_TYPES = ["월세", "전세"];
+const anamLeaseTypeStore = anamCreateLabelListStore(
+  LEASE_TYPE_STORAGE_KEY, DEFAULT_LEASE_TYPES, "lease_types", "anam:lease-types-updated"
+);
+function anamGetLeaseTypes() { return anamLeaseTypeStore.get(); }
+function anamSetLeaseTypes(list) { anamLeaseTypeStore.set(list); }
+function anamLoadLeaseTypesFromSupabase() { return anamLeaseTypeStore.loadFromSupabase(); }
+
 /* =========================================================
    anam real estate agency — 부동산 정보 매거진 목업 데이터
    info.html(목록) / info-detail.html(상세)에서 사용합니다.
@@ -524,6 +612,9 @@ function anamMapSupabaseRow(row) {
     area: row.area || "",
     structure: row.structure || "",
     structureEn: row.structure_en || row.structure || "",
+    totalFloors: row.total_floors || "",
+    currentFloor: row.current_floor || "",
+    builtYear: row.built_year || "",
     maintenanceFee: row.maintenance_fee || "",
     maintenanceFeeEn: row.maintenance_fee_en || row.maintenance_fee || "",
     options: row.options || "",
@@ -560,3 +651,6 @@ async function anamLoadListingsFromSupabase() {
 
 document.addEventListener("DOMContentLoaded", anamLoadListingsFromSupabase);
 document.addEventListener("DOMContentLoaded", anamLoadMagazineFromSupabase);
+document.addEventListener("DOMContentLoaded", anamLoadKeywordsFromSupabase);
+document.addEventListener("DOMContentLoaded", anamLoadListingTypesFromSupabase);
+document.addEventListener("DOMContentLoaded", anamLoadLeaseTypesFromSupabase);

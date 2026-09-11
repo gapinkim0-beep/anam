@@ -36,9 +36,32 @@
     loadListings();
     loadInquiries();
     loadMagazinePosts();
+    anamLoadKeywordsFromSupabase(); // 완료 시 "anam:keywords-updated" 이벤트로 아래 두 함수를 다시 호출
+    anamLoadListingTypesFromSupabase();
+    anamLoadLeaseTypesFromSupabase();
     renderKeywordPanel();
     renderFeatureChips();
+    renderListingTypePanel();
+    renderLeaseTypePanel();
+    renderTypeSelectOptions();
+    renderLeaseSelectOptions();
   }
+
+  // Supabase 키워드 조회가 끝나면(또는 다른 탭에서 변경되면) 관리자 화면도 갱신
+  document.addEventListener("anam:keywords-updated", () => {
+    renderKeywordPanel();
+    renderFeatureChips();
+  });
+
+  document.addEventListener("anam:listing-types-updated", () => {
+    renderListingTypePanel();
+    renderTypeSelectOptions();
+  });
+
+  document.addEventListener("anam:lease-types-updated", () => {
+    renderLeaseTypePanel();
+    renderLeaseSelectOptions();
+  });
 
   function showLogin() {
     dashboard.classList.add("admin-hidden");
@@ -147,6 +170,24 @@
     });
   }
 
+  const fTypeSelect = document.getElementById("fType");
+  const fLeaseTypeSelect = document.getElementById("fLeaseType");
+
+  // [매물종류/임대방식] 탭에서 등록한 목록을 기준으로 등록 폼의 드롭다운을 매번 새로 그립니다.
+  function renderTypeSelectOptions() {
+    const types = anamGetListingTypes();
+    const current = fTypeSelect.value;
+    fTypeSelect.innerHTML = types.map((t) => `<option value="${t}">${t}</option>`).join("");
+    if (types.includes(current)) fTypeSelect.value = current;
+  }
+
+  function renderLeaseSelectOptions() {
+    const types = anamGetLeaseTypes();
+    const current = fLeaseTypeSelect.value;
+    fLeaseTypeSelect.innerHTML = types.map((t) => `<option value="${t}">${t}</option>`).join("");
+    if (types.includes(current)) fLeaseTypeSelect.value = current;
+  }
+
   function readLocalListings() {
     try {
       const raw = localStorage.getItem(LISTING_STORAGE_KEY);
@@ -162,6 +203,14 @@
     localStorage.setItem(LISTING_STORAGE_KEY, JSON.stringify(list));
   }
 
+  // 호실(unitNumber)은 외부에 노출되면 안 되는 정보라 별도 테이블(listing_admin_info)에
+  // 저장하고, 관리자로 로그인했을 때만 이렇게 따로 불러와 매물 id 기준으로 매칭합니다.
+  let adminUnitNumbers = {}; // { [listingId]: unitNumber } — Supabase 연동 모드 전용
+
+  function getUnitNumber(item) {
+    return isSupabaseMode() ? (adminUnitNumbers[item.id] || "") : (item.unitNumber || "");
+  }
+
   async function loadListings() {
     if (isSupabaseMode()) {
       const { data, error } = await window.anamSupabase
@@ -173,6 +222,17 @@
         adminListings = [];
       } else {
         adminListings = data.map(anamMapSupabaseRow);
+      }
+
+      const { data: infoRows, error: infoError } = await window.anamSupabase
+        .from("listing_admin_info")
+        .select("*");
+      if (infoError) {
+        console.warn("[anam] 호실 정보 조회 실패:", infoError);
+        adminUnitNumbers = {};
+      } else {
+        adminUnitNumbers = {};
+        (infoRows || []).forEach((row) => { adminUnitNumbers[row.listing_id] = row.unit_number || ""; });
       }
     } else {
       adminListings = readLocalListings();
@@ -190,12 +250,15 @@
       const tr = document.createElement("tr");
       const priceLabel = item.leaseType === "전세"
         ? `전세 ${item.deposit}만원`
-        : `월세 ${item.deposit}/${item.monthlyRent}만원`;
+        : `${item.leaseType} ${item.deposit}/${item.monthlyRent}만원`;
       const updated = item.updatedAt ? new Date(item.updatedAt).toLocaleString("ko-KR") : "-";
+      // 호실은 관리자 표에서만 주소 옆 괄호로 보여줍니다 (외부 노출 금지 정보).
+      const unitNumber = getUnitNumber(item);
+      const addressLabel = unitNumber ? `${item.location} (${unitNumber})` : item.location;
       tr.innerHTML = `
         <td>${item.title}</td>
         <td>${item.type}</td>
-        <td>${item.location}</td>
+        <td>${addressLabel}</td>
         <td>${priceLabel}</td>
         <td>${updated}</td>
         <td class="admin-row-actions">
@@ -221,14 +284,20 @@
     editingId = id;
     document.getElementById("listingId").value = id;
     document.getElementById("fTitle").value = item.title || "";
-    document.getElementById("fType").value = item.type || "오피스텔";
-    document.getElementById("fLeaseType").value = item.leaseType || "월세";
+    renderTypeSelectOptions();
+    renderLeaseSelectOptions();
+    document.getElementById("fType").value = item.type || anamGetListingTypes()[0] || "";
+    document.getElementById("fLeaseType").value = item.leaseType || anamGetLeaseTypes()[0] || "";
     document.getElementById("fAddress").value = item.location || "";
+    document.getElementById("fUnitNumber").value = getUnitNumber(item);
     document.getElementById("fDeposit").value = item.deposit || 0;
     document.getElementById("fMonthlyRent").value = item.monthlyRent || 0;
     document.getElementById("fMaintenanceFee").value = item.maintenanceFee || "";
+    document.getElementById("fBuiltYear").value = item.builtYear || "";
     document.getElementById("fMoveInDate").value = item.moveInDate || "";
     document.getElementById("fStructure").value = item.structure || "";
+    document.getElementById("fTotalFloors").value = item.totalFloors || "";
+    document.getElementById("fCurrentFloor").value = item.currentFloor || "";
     document.getElementById("fOptions").value = item.options || "";
     document.getElementById("fEtc").value = item.etc || "";
     document.getElementById("fDescription").value = item.description || "";
@@ -236,6 +305,9 @@
 
     selectedFeatures = new Set(item.features || []);
     renderFeatureChips();
+
+    currentImages = (item.images || []).map((url) => ({ id: nextImageUid(), url, file: null }));
+    renderImageManager();
 
     listingFormTitle.textContent = "매물 수정";
     listingSubmitBtn.textContent = "수정 저장";
@@ -250,6 +322,10 @@
     document.getElementById("listingId").value = "";
     selectedFeatures = new Set();
     renderFeatureChips();
+    renderTypeSelectOptions();
+    renderLeaseSelectOptions();
+    currentImages = [];
+    renderImageManager();
     listingFormTitle.textContent = "매물 등록";
     listingSubmitBtn.textContent = "등록하기";
     cancelEditBtn.classList.add("admin-hidden");
@@ -292,6 +368,113 @@
     return readFileAsDataUrl(file);
   }
 
+  /* -------------------- 매물 이미지 관리자 (미리보기/삭제/순서변경) --------------------
+     currentImages: [{ id, url, file }]
+     - 기존에 저장돼 있던 이미지는 file이 없고 url만 있습니다(그대로 재사용).
+     - 새로 추가한 이미지는 file을 들고 있고, url은 미리보기용 objectURL입니다(제출 시 업로드).
+     - 배열의 0번째 항목이 항상 "대표 이미지"입니다. */
+  const imageManagerEl = document.getElementById("imageManager");
+  const fImageAdd = document.getElementById("fImageAdd");
+  let currentImages = [];
+  let imageUidCounter = 0;
+  function nextImageUid() { return ++imageUidCounter; }
+
+  function renderImageManager() {
+    imageManagerEl.innerHTML = "";
+    if (currentImages.length === 0) {
+      imageManagerEl.innerHTML = `<p class="image-manager-empty">등록된 사진이 없습니다. 아래에서 사진을 추가해 주세요.</p>`;
+      return;
+    }
+    currentImages.forEach((img, idx) => {
+      const card = document.createElement("div");
+      card.className = "image-manager-item";
+      card.draggable = true;
+      card.setAttribute("data-image-id", img.id);
+      card.innerHTML = `
+        ${idx === 0 ? '<span class="image-manager-badge">대표</span>' : ""}
+        <div class="image-manager-thumb"><img src="${img.url}" alt="매물 이미지 ${idx + 1}" /></div>
+        <div class="image-manager-actions">
+          <button type="button" class="image-manager-move" data-move="up" data-id="${img.id}" ${idx === 0 ? "disabled" : ""} aria-label="앞으로 이동">↑</button>
+          <button type="button" class="image-manager-move" data-move="down" data-id="${img.id}" ${idx === currentImages.length - 1 ? "disabled" : ""} aria-label="뒤로 이동">↓</button>
+          <button type="button" class="image-manager-remove" data-remove="${img.id}" aria-label="삭제">×</button>
+        </div>
+      `;
+      imageManagerEl.appendChild(card);
+    });
+  }
+
+  function moveImage(id, direction) {
+    const idx = currentImages.findIndex((img) => img.id === id);
+    if (idx < 0) return;
+    const swapWith = direction === "up" ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= currentImages.length) return;
+    [currentImages[idx], currentImages[swapWith]] = [currentImages[swapWith], currentImages[idx]];
+    renderImageManager();
+  }
+
+  imageManagerEl.addEventListener("click", (e) => {
+    const moveBtn = e.target.closest("button[data-move]");
+    if (moveBtn) { moveImage(Number(moveBtn.getAttribute("data-id")), moveBtn.getAttribute("data-move")); return; }
+    const removeBtn = e.target.closest("button[data-remove]");
+    if (removeBtn) {
+      const id = removeBtn.getAttribute("data-remove");
+      currentImages = currentImages.filter((img) => String(img.id) !== String(id));
+      renderImageManager();
+    }
+  });
+
+  // 드래그 앤 드롭으로도 순서를 바꿀 수 있습니다.
+  let dragSourceId = null;
+  imageManagerEl.addEventListener("dragstart", (e) => {
+    const card = e.target.closest(".image-manager-item");
+    if (!card) return;
+    dragSourceId = card.getAttribute("data-image-id");
+    card.classList.add("is-dragging");
+  });
+  imageManagerEl.addEventListener("dragend", (e) => {
+    const card = e.target.closest(".image-manager-item");
+    if (card) card.classList.remove("is-dragging");
+  });
+  imageManagerEl.addEventListener("dragover", (e) => e.preventDefault());
+  imageManagerEl.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const targetCard = e.target.closest(".image-manager-item");
+    if (!targetCard || dragSourceId == null) return;
+    const targetId = targetCard.getAttribute("data-image-id");
+    if (targetId === dragSourceId) return;
+    const fromIdx = currentImages.findIndex((img) => String(img.id) === String(dragSourceId));
+    const toIdx = currentImages.findIndex((img) => String(img.id) === String(targetId));
+    if (fromIdx < 0 || toIdx < 0) return;
+    const [moved] = currentImages.splice(fromIdx, 1);
+    currentImages.splice(toIdx, 0, moved);
+    dragSourceId = null;
+    renderImageManager();
+  });
+
+  fImageAdd.addEventListener("change", () => {
+    const files = Array.from(fImageAdd.files || []);
+    files.forEach((file) => {
+      currentImages.push({ id: nextImageUid(), url: URL.createObjectURL(file), file });
+    });
+    fImageAdd.value = ""; // 같은 파일을 다시 선택해도 change 이벤트가 발생하도록 초기화
+    renderImageManager();
+  });
+
+  /* -------------------- 주소 검색 (도로명 주소, Daum 우편번호 서비스) -------------------- */
+  const addressSearchBtn = document.getElementById("addressSearchBtn");
+  addressSearchBtn.addEventListener("click", () => {
+    if (!window.daum || !window.daum.Postcode) {
+      alert("주소 검색 스크립트를 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.");
+      return;
+    }
+    new window.daum.Postcode({
+      oncomplete(data) {
+        // 도로명 주소를 우선 사용하고, 없으면 지번 주소로 대체합니다.
+        document.getElementById("fAddress").value = data.roadAddress || data.jibunAddress || data.address || "";
+      }
+    }).open();
+  });
+
   listingForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     listingFormStatus.textContent = "저장 중…";
@@ -299,23 +482,21 @@
     const keywords = document.getElementById("fKeywords").value
       .split(",").map((k) => k.trim()).filter(Boolean);
 
-    const mainFile = document.getElementById("fMainImage").files[0];
-    const subFiles = Array.from(document.getElementById("fSubImages").files || []);
-
+    // 이미지 관리자(currentImages)에 담긴 순서 그대로 업로드합니다.
+    // 이미 저장되어 있던 이미지(file이 없는 항목)는 URL을 그대로 재사용하고,
+    // 새로 추가한 파일(file이 있는 항목)만 이번에 업로드합니다.
     let images = [];
     try {
-      const existing = editingId ? adminListings.find((l) => l.id === editingId) : null;
-      // 새로 첨부한 파일이 있으면 그것을 쓰고, 없으면 수정 전 기존 이미지를 그대로 유지합니다.
-      const mainUrl = mainFile ? await uploadImage(mainFile, "listing-images") : (existing && existing.images ? existing.images[0] : null);
-      const subUrls = subFiles.length
-        ? await Promise.all(subFiles.map((f) => uploadImage(f, "listing-images")))
-        : (existing && existing.images ? existing.images.slice(1) : []);
-      images = [mainUrl, ...subUrls].filter(Boolean);
+      for (const img of currentImages) {
+        images.push(img.file ? await uploadImage(img.file, "listing-images") : img.url);
+      }
       if (images.length === 0) images = ["https://picsum.photos/seed/anam-new/1200/900"];
     } catch (err) {
       listingFormStatus.textContent = "이미지 업로드 실패: " + err.message;
       return;
     }
+
+    const unitNumber = document.getElementById("fUnitNumber").value.trim();
 
     const payload = {
       type: document.getElementById("fType").value,
@@ -327,6 +508,9 @@
       move_in_date: document.getElementById("fMoveInDate").value || null,
       area: "",
       structure: document.getElementById("fStructure").value,
+      total_floors: document.getElementById("fTotalFloors").value,
+      current_floor: document.getElementById("fCurrentFloor").value,
+      built_year: document.getElementById("fBuiltYear").value,
       maintenance_fee: document.getElementById("fMaintenanceFee").value,
       options: document.getElementById("fOptions").value,
       etc: document.getElementById("fEtc").value,
@@ -339,16 +523,26 @@
 
     try {
       if (isSupabaseMode()) {
+        let listingIdForInfo = editingId;
         if (editingId) {
           const { error } = await window.anamSupabase.from("listings").update(payload).eq("id", editingId);
           if (error) throw error;
         } else {
-          const { error } = await window.anamSupabase.from("listings").insert(payload);
+          const { data: inserted, error } = await window.anamSupabase
+            .from("listings").insert(payload).select().single();
           if (error) throw error;
+          listingIdForInfo = inserted.id;
         }
+        // 호실은 별도 테이블(listing_admin_info, 관리자만 조회 가능한 RLS)에 저장해
+        // 공개 매물 조회 API(listings)로는 절대 노출되지 않도록 합니다.
+        const { error: infoError } = await window.anamSupabase
+          .from("listing_admin_info")
+          .upsert({ listing_id: listingIdForInfo, unit_number: unitNumber });
+        if (infoError) throw infoError;
       } else {
         const list = readLocalListings();
         const mapped = anamMapSupabaseRow({ id: editingId || nextLocalId(list), ...payload });
+        mapped.unitNumber = unitNumber; // 데모(로컬) 모드는 브라우저 안에서만 도는 값이라 그냥 같이 저장합니다.
         const idx = list.findIndex((l) => l.id === mapped.id);
         if (idx >= 0) list[idx] = mapped; else list.push(mapped);
         writeLocalListings(list);
@@ -385,7 +579,7 @@
     });
   }
 
-  keywordForm.addEventListener("submit", (e) => {
+  keywordForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const value = keywordInput.value.trim();
     if (!value) return;
@@ -394,21 +588,145 @@
       keywordInput.value = "";
       return;
     }
-    keywords.push(value);
-    anamSetKeywords(keywords);
+    if (isSupabaseMode()) {
+      const { error } = await window.anamSupabase
+        .from("keywords")
+        .insert({ label: value, sort_order: keywords.length });
+      if (error) { alert("키워드 등록 실패: " + error.message); return; }
+      await anamLoadKeywordsFromSupabase();
+    } else {
+      keywords.push(value);
+      anamSetKeywords(keywords);
+    }
     keywordInput.value = "";
     renderKeywordPanel();
     renderFeatureChips();
   });
 
-  keywordChipList.addEventListener("click", (e) => {
+  keywordChipList.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-keyword]");
     if (!btn) return;
     const target = btn.getAttribute("data-keyword");
-    const keywords = anamGetKeywords().filter((k) => k !== target);
-    anamSetKeywords(keywords);
+    if (isSupabaseMode()) {
+      const { error } = await window.anamSupabase.from("keywords").delete().eq("label", target);
+      if (error) { alert("키워드 삭제 실패: " + error.message); return; }
+      await anamLoadKeywordsFromSupabase();
+    } else {
+      const keywords = anamGetKeywords().filter((k) => k !== target);
+      anamSetKeywords(keywords);
+    }
     renderKeywordPanel();
     renderFeatureChips();
+  });
+
+  /* -------------------- 매물 종류 관리 -------------------- */
+  const listingTypeForm = document.getElementById("listingTypeForm");
+  const listingTypeInput = document.getElementById("fListingTypeNew");
+  const listingTypeChipList = document.getElementById("listingTypeChipList");
+
+  function renderListingTypePanel() {
+    const types = anamGetListingTypes();
+    listingTypeChipList.innerHTML = "";
+    if (types.length === 0) {
+      listingTypeChipList.innerHTML = `<span class="admin-form-status">등록된 매물 종류가 없습니다.</span>`;
+      return;
+    }
+    types.forEach((type) => {
+      const chip = document.createElement("span");
+      chip.className = "chip admin-keyword-chip";
+      chip.innerHTML = `${type} <button type="button" class="admin-keyword-remove" data-type="${type}" aria-label="${type} 삭제">×</button>`;
+      listingTypeChipList.appendChild(chip);
+    });
+  }
+
+  listingTypeForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const value = listingTypeInput.value.trim();
+    if (!value) return;
+    const types = anamGetListingTypes();
+    if (types.includes(value)) { listingTypeInput.value = ""; return; }
+    if (isSupabaseMode()) {
+      const { error } = await window.anamSupabase
+        .from("listing_types").insert({ label: value, sort_order: types.length });
+      if (error) { alert("매물 종류 등록 실패: " + error.message); return; }
+      await anamLoadListingTypesFromSupabase();
+    } else {
+      types.push(value);
+      anamSetListingTypes(types);
+    }
+    listingTypeInput.value = "";
+    renderListingTypePanel();
+    renderTypeSelectOptions();
+  });
+
+  listingTypeChipList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-type]");
+    if (!btn) return;
+    const target = btn.getAttribute("data-type");
+    if (isSupabaseMode()) {
+      const { error } = await window.anamSupabase.from("listing_types").delete().eq("label", target);
+      if (error) { alert("매물 종류 삭제 실패: " + error.message); return; }
+      await anamLoadListingTypesFromSupabase();
+    } else {
+      anamSetListingTypes(anamGetListingTypes().filter((t) => t !== target));
+    }
+    renderListingTypePanel();
+    renderTypeSelectOptions();
+  });
+
+  /* -------------------- 임대방식 관리 -------------------- */
+  const leaseTypeForm = document.getElementById("leaseTypeForm");
+  const leaseTypeInput = document.getElementById("fLeaseTypeNew");
+  const leaseTypeChipList = document.getElementById("leaseTypeChipList");
+
+  function renderLeaseTypePanel() {
+    const types = anamGetLeaseTypes();
+    leaseTypeChipList.innerHTML = "";
+    if (types.length === 0) {
+      leaseTypeChipList.innerHTML = `<span class="admin-form-status">등록된 임대방식이 없습니다.</span>`;
+      return;
+    }
+    types.forEach((type) => {
+      const chip = document.createElement("span");
+      chip.className = "chip admin-keyword-chip";
+      chip.innerHTML = `${type} <button type="button" class="admin-keyword-remove" data-lease-type="${type}" aria-label="${type} 삭제">×</button>`;
+      leaseTypeChipList.appendChild(chip);
+    });
+  }
+
+  leaseTypeForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const value = leaseTypeInput.value.trim();
+    if (!value) return;
+    const types = anamGetLeaseTypes();
+    if (types.includes(value)) { leaseTypeInput.value = ""; return; }
+    if (isSupabaseMode()) {
+      const { error } = await window.anamSupabase
+        .from("lease_types").insert({ label: value, sort_order: types.length });
+      if (error) { alert("임대방식 등록 실패: " + error.message); return; }
+      await anamLoadLeaseTypesFromSupabase();
+    } else {
+      types.push(value);
+      anamSetLeaseTypes(types);
+    }
+    leaseTypeInput.value = "";
+    renderLeaseTypePanel();
+    renderLeaseSelectOptions();
+  });
+
+  leaseTypeChipList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-lease-type]");
+    if (!btn) return;
+    const target = btn.getAttribute("data-lease-type");
+    if (isSupabaseMode()) {
+      const { error } = await window.anamSupabase.from("lease_types").delete().eq("label", target);
+      if (error) { alert("임대방식 삭제 실패: " + error.message); return; }
+      await anamLoadLeaseTypesFromSupabase();
+    } else {
+      anamSetLeaseTypes(anamGetLeaseTypes().filter((t) => t !== target));
+    }
+    renderLeaseTypePanel();
+    renderLeaseSelectOptions();
   });
 
   /* -------------------- 고객 문의 내역 -------------------- */

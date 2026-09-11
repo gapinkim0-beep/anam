@@ -17,14 +17,15 @@
 
   function formatPrice(item) {
     const isEn = lang() === "en";
+    const label = isEn ? (item.leaseTypeEn || item.leaseType) : item.leaseType;
     if (item.leaseType === "전세") {
       return isEn
-        ? `Jeonse · ${item.deposit.toLocaleString()}0,000 KRW`
-        : `전세 ${item.deposit.toLocaleString()}만원`;
+        ? `${label} · ${item.deposit.toLocaleString()}0,000 KRW`
+        : `${label} ${item.deposit.toLocaleString()}만원`;
     }
     return isEn
-      ? `Monthly · ${item.deposit.toLocaleString()}0,000 / ${item.monthlyRent.toLocaleString()}0,000 KRW`
-      : `월세 ${item.deposit.toLocaleString()}/${item.monthlyRent.toLocaleString()}만원`;
+      ? `${label} · ${item.deposit.toLocaleString()}0,000 / ${item.monthlyRent.toLocaleString()}0,000 KRW`
+      : `${label} ${item.deposit.toLocaleString()}/${item.monthlyRent.toLocaleString()}만원`;
   }
 
   function formatDate(iso) {
@@ -137,6 +138,23 @@
     });
   }
 
+  // 매물 종류 옵션 — 관리자 [매물종류/임대방식] 탭에서 등록한 목록(anamGetListingTypes)을
+  // 기준으로 매번 새로 그려서, 종류를 추가/삭제해도 필터바에 즉시 반영되도록 합니다.
+  function renderTypeOptions() {
+    const types = anamGetListingTypes();
+    const current = typeSelect.value;
+    typeSelect.innerHTML = `<option value="all">${I18N[lang()]["filter.type.all"]}</option>`;
+    types.forEach((type) => {
+      const opt = document.createElement("option");
+      opt.value = type;
+      opt.textContent = type;
+      typeSelect.appendChild(opt);
+    });
+    // 삭제된 종류가 선택되어 있었다면 "전체"로 되돌립니다.
+    typeSelect.value = types.includes(current) ? current : "all";
+    state.type = typeSelect.value;
+  }
+
   typeSelect.addEventListener("change", () => {
     state.type = typeSelect.value;
     render();
@@ -149,9 +167,11 @@
   });
 
   renderFeatureChips();
+  renderTypeOptions();
   // 관리자 페이지(admin.html)에서 키워드를 수정하면 다른 탭의 localStorage "storage" 이벤트로 전달됩니다.
   window.addEventListener("storage", (e) => {
     if (e.key === KEYWORD_STORAGE_KEY) { renderFeatureChips(); render(); }
+    if (e.key === LISTING_TYPE_STORAGE_KEY) { renderTypeOptions(); render(); }
   });
 
   filterForm.addEventListener("submit", (e) => {
@@ -170,7 +190,9 @@
     });
   });
 
-  document.addEventListener("anam:lang-changed", render);
+  document.addEventListener("anam:lang-changed", () => { renderTypeOptions(); render(); });
   document.addEventListener("anam:listings-updated", render); // Supabase 실시간 반영
+  document.addEventListener("anam:keywords-updated", () => { renderFeatureChips(); render(); }); // Supabase 실시간 반영
+  document.addEventListener("anam:listing-types-updated", () => { renderTypeOptions(); render(); }); // Supabase 실시간 반영
   render();
 })();

@@ -77,30 +77,43 @@ python -m http.server 5500
 
 ### 상단 탭 대시보드
 
-1. **매물수정**: 기존 매물 등록/수정/삭제(CRUD). 이미지, 주소, 가격, 임대방식 등을 관리합니다.
-2. **키워드**: 필터바(index.html) 및 매물 등록 폼의 '매물 특징' 칩으로 쓰이는 라이프스타일 키워드를
+1. **매물수정**: 기존 매물 등록/수정/삭제(CRUD). 주소는 도로명 주소 검색(Daum 우편번호 서비스)으로 입력하고,
+   이미지는 미리보기·삭제·순서 변경(드래그 또는 ↑↓ 버튼)이 가능한 이미지 관리자로 등록합니다.
+   호실(동/호수)은 별도 입력란에 적으며 **관리자 화면(등록된 매물 표)에서만** 노출되고, index.html/detail.html
+   등 외부 화면에는 절대 표시되지 않습니다(Supabase 연동 시 `listing_admin_info`라는 별도 테이블에 저장되어
+   관리자만 조회 가능한 RLS가 걸립니다).
+2. **매물종류/임대방식**: 매물 종류(오피스텔/주택/상가 등)와 임대방식(월세/전세 등)을 자유롭게
+   추가/삭제합니다. 저장 즉시 [매물수정] 등록 폼의 드롭다운과 메인 화면(index.html) 필터바에 반영됩니다.
+3. **키워드**: 필터바(index.html) 및 매물 등록 폼의 '매물 특징' 칩으로 쓰이는 라이프스타일 키워드를
    추가/삭제합니다. 저장 즉시 메인 화면과 매물 등록 폼에 반영됩니다.
-3. **문의고객**: 고객 문의 내역을 표로 확인하고, 각 행의 **스텝 인디케이터**(확인 → 상담중 → 완료)를
+4. **문의고객**: 고객 문의 내역을 표로 확인하고, 각 행의 **스텝 인디케이터**(확인 → 상담중 → 완료)를
    클릭해 처리 상태를 갱신합니다.
-4. **부동산정보**: `info.html`에 노출될 매주 이슈 글을 작성/수정/삭제합니다. (본문 15px)
+5. **부동산정보**: `info.html`에 노출될 매주 이슈 글을 작성/수정/삭제합니다. (본문 15px) 본문에 URL을
+   그대로 적으면 info-detail.html에서 자동으로 클릭 가능한 링크(관련 기사 등)로 표시됩니다.
 
 ## 데이터 연동 가이드 (Supabase)
 
 현재는 `assets/js/data.js`의 `LISTINGS` 배열(및 데모 모드에서는 localStorage)로 동작하는 프론트엔드 전용 프로토타입이며,
 Supabase를 연동하면 아래 순서로 실제 DB에 실시간 반영됩니다.
 
-1. Supabase 프로젝트를 만들고, **테이블 스키마 / RLS 정책 / Storage 버킷 / 관리자 계정 생성 SQL·가이드**는
-   `assets/js/supabase-client.js` 파일 상단 주석에 그대로 정리되어 있습니다. Supabase SQL Editor에 복사해 실행하세요.
+1. Supabase 프로젝트를 만들고, **테이블 스키마(매물/문의고객/부동산정보/키워드) / RLS 정책 / Storage 버킷 / 관리자 계정
+   생성 SQL·가이드**는 `assets/js/supabase-client.js` 파일 상단 주석과 `supabase/schema.sql` 파일에 정리되어 있습니다.
+   `supabase/schema.sql` 내용을 통째로 Supabase 대시보드 > SQL Editor에 붙여넣어 한 번에 실행하세요.
 2. `assets/js/supabase-client.js`의 `SUPABASE_URL`, `SUPABASE_ANON_KEY` 두 값을 프로젝트 값으로 채워 넣습니다.
    (anon public key만 사용하고, service_role 키는 절대 프론트 코드에 넣지 않습니다.)
-3. 값을 채우는 즉시:
+3. Supabase 대시보드 > Authentication > Users에서 `ADMIN_EMAIL`(기본값 `admin@anam-realestate.local`) 계정을
+   비밀번호와 함께 하나 만듭니다. **이 계정을 만들기 전까지는 관리자 페이지에 로그인할 수 없습니다** (URL/KEY를
+   채운 순간부터 데모 비밀번호 `anam1234`는 더 이상 통하지 않고, 실제 Supabase Auth 로그인만 동작합니다).
+4. 값을 채우는 즉시:
    - `index.html` / `detail.html`은 `listings` 테이블 데이터를 불러와 자동으로 화면을 갱신합니다. (`data.js`의 `anamLoadListingsFromSupabase`)
    - `info.html` / `info-detail.html`은 `magazine_posts` 테이블 데이터를 불러옵니다. (`data.js`의 `anamLoadMagazineFromSupabase`)
+   - `index.html` 필터바 / `admin.html` 매물 등록 폼 칩은 `keywords` 테이블 데이터를 불러옵니다. (`data.js`의 `anamLoadKeywordsFromSupabase`)
    - 상세페이지 '문의하기' 팝업은 `inquiries` 테이블에 `status`(확인/상담중/완료) 기본값과 함께 저장됩니다. (`inquiry-modal.js`)
-   - `admin.html`의 등록/수정/삭제와 이미지 업로드는 `listings`/`magazine_posts` 테이블 및 `listing-images`/`magazine-images`
-     Storage 버킷을 사용하고, 문의 상태 변경은 `inquiries.status`를 업데이트합니다. (`admin.js`)
-4. 값을 비워두면(기본 상태) 모든 화면이 자동으로 데모 모드(목업 데이터 + localStorage)로 동작하므로,
-   Supabase 없이도 전체 흐름(등록 → 메인/상세 반영 → 문의 접수 → 관리자 확인/상태 변경 → 매거진 발행)을 바로 확인할 수 있습니다.
+   - `admin.html`의 등록/수정/삭제와 이미지 업로드는 `listings`/`magazine_posts`/`keywords` 테이블 및
+     `listing-images`/`magazine-images` Storage 버킷을 사용하고, 문의 상태 변경은 `inquiries.status`를 업데이트합니다. (`admin.js`)
+5. 값을 비워두면(기본 상태) 모든 화면이 자동으로 데모 모드(목업 데이터 + localStorage)로 동작하므로,
+   Supabase 없이도 전체 흐름(등록 → 메인/상세 반영 → 문의 접수 → 관리자 확인/상태 변경 → 매거진 발행 → 키워드 추가)을
+   바로 확인할 수 있습니다.
 
 ### 공통 권장 사항
 
